@@ -1,0 +1,5 @@
+# This file may be used to create an environment using:
+# $ conda create --name tutorial --file <this file>
+python=2.7
+htseq=0.7.2
+rseqc=2.6.4

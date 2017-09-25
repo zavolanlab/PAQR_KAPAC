@@ -1,3 +1,4 @@
 # HOWTO with the infos how the git was created
 HOWTO.sh
-
+# all temporary emacs and vim files
+*~

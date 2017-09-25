@@ -1,0 +1,59 @@
+---
+#-------------------------------------------------------------------------------
+# general settings
+#-------------------------------------------------------------------------------
+
+# full path to the environment created earlier
+py2_env_path: ~/soft/miniconda3/envs
+
+# directory that contains the scripts
+dir.scripts: scripts
+
+# name of the studies to run in this analysis
+studies: [HNRNPC_KD]
+
+# path to the bam files used as input
+dir.input: data/bam_files
+
+# path to the directory to store the TIN values per sample
+data/samplewise_TIN
+
+# path to the poly(A) site annotation
+# a set of tandem poly(A) sites located on terminal exons
+clusters: data/annotation/clusters.hg38.canonical_chr.tandem.noOverlap_strand_specific.bed
+
+# file with the transcript annotations of all transcripts
+# for which a TIN value is calculated
+# here: each transcript has a corresponding terminal exon with at least
+#       2 poly(A) sites
+transcripts: full_transcripts.hg38.canonical_chr.tandem.noOverlap_strand_specific.bed
+
+#-------------------------------------------------------------------------------
+# sample specific values:
+# - name of samples per study
+# - name of BAM file and condition per sample
+#-------------------------------------------------------------------------------
+
+HNRNPC_KD:
+  samples: [ctl_rep1, ctl_rep2, HNRNPC_rep1, HNRNPC_rep2]
+
+ctl_rep1: {bam: CTL_rep1, type: CNTRL}
+ctl_rep2: {CTL_rep2, type: CNTRL}
+HNRNPC_rep1: {KD_rep1, type: KD}
+HNRNPC_rep2: {KD_rep2, type: KD}
+
+#-------------------------------------------------------------------------------
+# params for TIN value calculations
+#-------------------------------------------------------------------------------
+
+# minimum raw reads per transcript; otherwise the transcript is not considered
+bias.rawReads.min: 10
+
+# number of randomly sampled transcript positions (on top of all splice junctions)
+bias.transcripts.sampleSize: 100
+
+# cutoff for the median TIN value per sample
+# sample below the cutoff are excluded from further analysis steps
+bias.median.cutoff: 65.0
+
+...
