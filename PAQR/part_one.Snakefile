@@ -3,6 +3,10 @@ configfile: "config.yaml"
 from snakemake.utils import makedirs
 from snakemake.utils import listfiles
 
+import os
+import numpy as np
+import yaml
+
 localrules: create_log_dir, merge_TIN_vals, TIN_assessment, plot_full_trans_TIN_distributions, all
 
 ################################################################################
@@ -72,7 +76,7 @@ rule assess_TIN_bias_transcript_wide:
         config["dir.samplewise_TIN"] + "/logs/{sample}.log"
     shell:
         '''
-        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/rs-TIN.transcript_wide.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/calculate-TIN-values.py \
         -i {input.bam} \
         -r {params.transcripts} \
         -c {params.min_raw_reads} \
@@ -99,7 +103,7 @@ rule merge_TIN_vals:
         "{study}/logs/merge_TIN_vals.log"
     shell:
         '''
-        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/rs-merge-bias-tables.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/merge-TIN-tables.py \
         --verbose \
         --input {input.tables} \
         > {output} \
@@ -184,7 +188,7 @@ rule plot_full_trans_TIN_distributions:
         "{study}/bias.transcript_wide.TIN.boxplots.pdf"
     shell:
         '''
-        Rscript {params.script_dir}/rs-boxplots-TINs.R \
+        Rscript {params.script_dir}/boxplots-TIN-distributions.R \
 	--file {input.table} \
 	--pdf {output}
         '''
@@ -211,11 +215,15 @@ rule infer_valid_samples:
                 F = line.rstrip().split("\t")
                 curr_uuid = F[0]
                 if os.path.isfile(params.dummy_file):
-                    bam_file = "../../" + config["dir.input"] + "/dummy_" + str(line_cnt) + ".bam"
+                    # bam_file = "../../" + config["dir.input"] + "/dummy_" + str(line_cnt) + ".bam"
+                    pass
                 else:
                     bam_file = "../../" + config["dir.input"] + "/" + config[curr_uuid]['bam'] + ".bam"
                 bam_index_file = bam_file + ".bai"
                 res_dir = wildcards.study
                 # create a soft link for the bam and for the bai
-                shell("cd {res_dir}/valid_samples/;ln -fs {bam_file} {curr_uuid}.bam")
-                shell("cd {res_dir}/valid_samples/;ln -fs {bam_index_file} {curr_uuid}.bam.bai")
+                # shell("cd {res_dir}/valid_samples/;ln -fs {bam_file} {curr_uuid}.bam")
+                # shell("cd {res_dir}/valid_samples/;ln -fs {bam_index_file} {curr_uuid}.bam.bai")
+                if not os.path.isfile(params.dummy_file):
+                    shell("cd {res_dir}/valid_samples/;ln -fs {bam_file} {curr_uuid}.bam")
+                    shell("cd {res_dir}/valid_samples/;ln -fs {bam_index_file} {curr_uuid}.bam.bai")

@@ -19,14 +19,15 @@ dir.input: data/bam_files
 data/samplewise_TIN
 
 # path to the poly(A) site annotation
-# a set of tandem poly(A) sites located on terminal exons
+# a set of poly(A) sites located on terminal exons
+# with at least two poly(A) sites on each terminal exon
 clusters: data/annotation/clusters.hg38.canonical_chr.tandem.noOverlap_strand_specific.bed
 
 # file with the transcript annotations of all transcripts
 # for which a TIN value is calculated
 # here: each transcript has a corresponding terminal exon with at least
 #       2 poly(A) sites
-transcripts: full_transcripts.hg38.canonical_chr.tandem.noOverlap_strand_specific.bed
+transcripts: data/annotation/full_transcripts.hg38.canonical_chr.tandem.noOverlap_strand_specific.bed
 
 #-------------------------------------------------------------------------------
 # sample specific values:
@@ -38,22 +39,92 @@ HNRNPC_KD:
   samples: [ctl_rep1, ctl_rep2, HNRNPC_rep1, HNRNPC_rep2]
 
 ctl_rep1: {bam: CTL_rep1, type: CNTRL}
-ctl_rep2: {CTL_rep2, type: CNTRL}
-HNRNPC_rep1: {KD_rep1, type: KD}
-HNRNPC_rep2: {KD_rep2, type: KD}
+ctl_rep2: {bam: CTL_rep2, type: CNTRL}
+HNRNPC_rep1: {bam: KD_rep1, type: KD, control: ctl_rep1}
+HNRNPC_rep2: {bam: KD_rep2, type: KD, control: ctl_rep2}
 
 #-------------------------------------------------------------------------------
 # params for TIN value calculations
 #-------------------------------------------------------------------------------
 
+# path to store the TIN values, one sample per file
+dir.samplewise_TIN: data/samplewise_TIN
+
 # minimum raw reads per transcript; otherwise the transcript is not considered
 bias.rawReads.min: 10
 
 # number of randomly sampled transcript positions (on top of all splice junctions)
+# that are assessed to obtain a TIN value per transcript
 bias.transcripts.sampleSize: 100
 
 # cutoff for the median TIN value per sample
 # sample below the cutoff are excluded from further analysis steps
-bias.median.cutoff: 65.0
+bias.median.cutoff: 70.0
+
+#-------------------------------------------------------------------------------
+# create read coverage profiles for all terminal exons and all samples
+#-------------------------------------------------------------------------------
+
+# number of threads the script is allowed to use
+cvg.threads: 8
+
+# number of nucleotides for which the coverage profile is extended and obtained
+# downstream of each annotated exon end
+cvg.ds_extend: 200
+
+# minimum distance between the exon start and the most proximal poly(A) site
+# for exons with distances below the cutoff the upstream extension of the coverage
+# is calculated
+cvg.start2prox_minDist: 250
+
+# denote if the BAM files come from unstrand sequencing data
+# (default: paired-end sequencing with read1 being in reverse orientation (on the 
+#  opposite strand) and read2 in forward orientation
+# single-stranded data with the read in sense direction is processed properly as well
+cvg.unstranded: no
+
+#-------------------------------------------------------------------------------
+# infer the expression and the relative usages of tandem poly(A) sites
+#-------------------------------------------------------------------------------
+
+# number of threads the script is allowed to use
+relUse.threads: 8
+
+# read length of the study (when different samples have different read length
+# it is suggested to take the maximum)
+# the read length is used to define regions upstream of valid 3' ends with
+# expected decrease in read coverage
+relUse.read_length: 100
+
+# minimum size (in nucleotides) of the upstream region of a poly(A) site
+# that needs to be available to infer the mean coverage
+relUse.minLength.meanCvg: 100
+
+# minimum mean read coverage (of raw read counts) of a terminal exon (in each sample)
+relUse.minMeanCvg.perSample: 5
+
+# number of nucleotides downstream of a poly(A) site for which the read coverage
+# is evaluated in order to define the most distal poly(A) site
+relUse.distal_ds: 200
+
+# maximum percentage of the mean read coverage for the region downstream of
+# a poly(A) site with respect to the coverage at the exon start to classify the site as
+# valid distal site
+relUse.distal_ds.maxCvg: 10
+
+# minimum distance between two annotated poly(A) sites to treat them independently
+# poly(A) sites that are closer than this value are treated together as a pool of sites
+relUse.min_cluster_distance: 200
+
+# temporary poly(A) site upstream extension (in nt)
+# this region is included to define the best segmentation point
+relUse.us_reg_for_best_breakPoint: 200
+
+# threshold for the MSE ratio;
+# a valid poly(A) site must allow to separate the region into two segments with smaller
+# mean deviations such that the ratio lies below this threshold
+relUse.mse_ratio_threshold: 0.5
+
+
 
 ...

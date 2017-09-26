@@ -1,6 +1,7 @@
 # This file may be used to create an environment using:
 # $ conda create --name tutorial --file <this file>
 python=3.5.1
+numpy=1.11.3
 snakemake=3.13.0
 graphviz=2.38.0
 pyyaml=3.12

@@ -40,6 +40,7 @@ If you already have a conda version with python2 installed, create the new pytho
 With the installation of the environment, the following software is installed as well:
 - [Python](https://www.python.org/) (v3.5.1)
 - [Snakemake](https://snakemake.readthedocs.io/en/stable/) (v3.13.0)
+- [NumPy] (http://www.numpy.org/) (v1.11.3)
 - [Graphviz](http://www.graphviz.org/) (v2.38.0)
 - [PyYaml](http://pyyaml.org/) (v3.12)
 - [Docutils](http://docutils.sourceforge.net/) (v0.12)
