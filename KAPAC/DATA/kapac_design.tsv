@@ -1,0 +1,5 @@
+sample_id	cell_type	treatment	replicate	group	contrast	color
+29765	HEK293	siCntrl	rep1	CNTRL	CNTRL	#d9d9d9
+29766	HEK293	siHNRNPC	rep1	KD	29765	#B2DF8A
+32682	HEK293	siCntrl	rep2	CNTRL	CNTRL	#969696
+32683	HEK293	siHNRNPC	rep2	KD	32682	#33A02C

@@ -5,7 +5,7 @@ PAQR is a tool that allows the quantification of transcript 3' ends (or poly(A) 
 The method is actually a combination of scripts that depend on each other. To ease the execution of the scripts they have been assembled into a pipeline. The use PAQR, you simply have to run the pipeline. 
 
 ## Requirements
-Depending on how deep your original material was sequenced (i.e. how big your input files are in terms of the memory usage), your computer might require **50 GB of available memory (RAM)** to process these files. [Snakemake]{https://snakemake.readthedocs.io/en/stable/} is used to facilitate the automated execution of all analysis steps. The easiest way to make use of the pipeline is to set up a python3 and a python2 virtual environment and run the pipeline in the python3 environment. Instructions on how to install the virtual environments for the analysis are given in the README of the main directory of this repository.
+Depending on how deep your original material was sequenced (i.e. how big your input files are in terms of the memory usage), your computer might require **50 GB of available memory (RAM)** to process these files. [Snakemake](https://snakemake.readthedocs.io/en/stable/) is used to facilitate the automated execution of all analysis steps. The easiest way to make use of the pipeline is to set up a python3 and a python2 virtual environment and run the pipeline in the python3 environment. Instructions on how to install the virtual environments for the analysis are given in the README of the main directory of this repository.
 
 ### snakemake
 Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires python3 and can be most easily installed via the bioconda package of the python anaconda distribution. You're setup right after the following steps:
@@ -50,6 +50,7 @@ Connect the name of your samples with the study they belong to: The config file 
 
 
 ## Start the pipeline
+Before you run the pipeline, ensure that your current working directory is PAQR.
 Once you prepared your config file, you can start the pipeline by simply executing:
 ```bash
 max_cores=4 # maximum number of threads that will run in parallel

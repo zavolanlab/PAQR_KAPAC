@@ -62,7 +62,7 @@ rule create_coverages:
         "{study}/logs/{sample_na}/create_coverages.log"
     shell:
         '''
-        {params.py2_env_path}/python {params.script_dir}/mRNAseq-coverage-objects-and-wiggleFiles.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/mRNAseq-coverage-objects-and-wiggleFiles.py \
         --verbose \
         --bam {input.bam} \
         --cluster {params.clusters} \
@@ -116,7 +116,7 @@ rule infer_relative_usage:
         conds_string = " ".join(conds)
         extens_string = " ".join(extens)
         shell('''
-        {params.py2_env_path}/python {params.script_dir}/deNovo-used-sites-and-usage-inference.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/deNovo-used-sites-and-usage-inference.py \
         --verbose \
 	--expressions_out {output.expressions} \
         --clusters {params.clusters} \
@@ -206,7 +206,7 @@ rule tpm_normalize:
 rule get_filtered_rel_usages:
     ##LOCAL##
     input:
-	rel_use = "{study}/relative_usages.tsv",
+        rel_use = "{study}/relative_usages.tsv",
         expressions = "{study}/tandem_pas_expressions.rpm.tsv"
     output:
         rel_use_filtered = "{study}/relative_usages.filtered.tsv",
@@ -281,7 +281,7 @@ rule rel_pos_of_pAs:
         py2_env_path = config['py2_env_path']
     shell:
         '''
-        {params.py2_env_path}/python {params.script_dir}/relative-pas-position-within-exon.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/relative-pas-position-within-exon.py \
         --relUsage {input} \
         > {output}
         '''
@@ -303,7 +303,7 @@ rule weighted_average_exon_length:
     run:
         sample_names = " ".join([curr_id.rstrip() for curr_id in open(input.header, "r").readlines()])
         shell('''
-        {params.py2_env_path}/python {params.script_dir}/calculate-average-3pUTR-length.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/calculate-average-3pUTR-length.py \
         --samples {sample_names} \
         --relativePos={input.relPos} \
         --relUsage {input.relUse} \
@@ -317,7 +317,7 @@ rule weighted_average_exon_length:
 rule plot_average_exon_length:
     ##LOCAL##
     input:
-        "{study}/weighted_avg_exonLength.filtered.tsv"
+        "{study}/weighted_avg_exonLength.tsv"
     output:
         "{study}/weighted_avg_exonLength.CDFs.pdf"
     params:
@@ -326,7 +326,7 @@ rule plot_average_exon_length:
         study = "{study}"
     shell:
         '''
-        Rscript {params.script_dir}/rs-plot-ecdfs.R \
+        Rscript {params.script_dir}/plot-ecdfs.R \
         --main={params.study}_samples \
         --pdf={output} \
         --file={input}

@@ -16,7 +16,7 @@ studies: [HNRNPC_KD]
 dir.input: data/bam_files
 
 # path to the directory to store the TIN values per sample
-data/samplewise_TIN
+dir.samplewise_TIN: data/samplewise_TIN
 
 # path to the poly(A) site annotation
 # a set of poly(A) sites located on terminal exons
@@ -124,7 +124,5 @@ relUse.us_reg_for_best_breakPoint: 200
 # a valid poly(A) site must allow to separate the region into two segments with smaller
 # mean deviations such that the ratio lies below this threshold
 relUse.mse_ratio_threshold: 0.5
-
-
 
 ...

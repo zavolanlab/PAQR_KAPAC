@@ -34,7 +34,7 @@ On MacOS X:
   ```
 If you already have a conda version with python2 installed, create the new python 3 environment like this:
   ```bash
-  conda create -n paqr_kapac -c bioconda --file requirements_py3.txt python=3
+  conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3.txt python=3
   ```
 
 With the installation of the environment, the following software is installed as well:
@@ -48,13 +48,13 @@ With the installation of the environment, the following software is installed as
 - [samtools](http://www.htslib.org/) (v1.3.1)
 - [bedtools](http://bedtools.readthedocs.io/en/latest/) (v2.26.0)
 - [gzip](http://www.gzip.org/) (v1.7)
-- [R] (https://www.r-project.org/)
-- [SRA tools] (https://github.com/ncbi/sra-tools)
+- [R](https://www.r-project.org/)
+- [SRA tools](https://github.com/ncbi/sra-tools) (v.
 
 #### Step 3: Creating a new python2 environment to run PAQR
 PAQR relies on packages that are available only for python2 currently. To ensure that PAQR runs properly, this python2 environment is installed.
   ```bash
-  conda create -n py2_paqr python=2.7 -c bioconda --file requirements_py2.txt
+  conda create -n py2_paqr python=2 -c bioconda --file requirements_py2.txt
   ```
 
 The following python packages are available in this python2 environment:

@@ -19,16 +19,10 @@ import time
 import HTSeq
 from argparse import ArgumentParser, RawTextHelpFormatter
 import numpy as np
-from scipy import stats
 import cPickle
 import datetime
 import multiprocessing
 import bisect
-import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-matplotlib.use('Agg')
-from matplotlib import pyplot as plt
-
 
 parser = ArgumentParser(description=__doc__, formatter_class=RawTextHelpFormatter)
 parser.add_argument("-v",
@@ -157,154 +151,7 @@ np.seterr(all='raise')
 
 def time_now():#return time
     curr_time = datetime.datetime.now()
-    return curr_time.strftime("%c")
-
-def infer_us_ext_region(exon_structure, region, bp_coverages_dict, valid_mean_cvg_dict, default_add_us_ext, exon_id):
-
-    '''Find the position upstream of the annotated exon start
-    at which the coverage drops.
-    The assumptions: the drop is visible as distinct bend in the
-    cumulative distribution of the coverage profile.
-    The cumulative dist is considered in the direction downstream -> upstream
-    with the most upstream pos having F(x) = 1'''
-
-    strand = exon_structure[1]
-
-    add_us_ext_dict = {}
-
-    for cond in bp_coverages_dict:
-
-        add_us_ext_dict[cond] = []
-
-        for cvg_idx in range(len(bp_coverages_dict[cond])):
-
-            cvg = bp_coverages_dict[cond][cvg_idx]
-
-            # do not consider samples with too little coverage
-            if valid_mean_cvg_dict[cond][cvg_idx] == 0:
-                add_us_ext_dict[cond].append(0)
-                continue
-
-            # use the following region:
-            # upstream_start: exon_start - add_us_extension
-            # downstream_end: exon_start + 100
-            if strand == "+":
-                end_idx = region.index( exon_structure[2] + 100 )
-                y = cvg[ : end_idx ][::-1]
-            else:
-                start_idx = region.index( exon_structure[3] - 100 )
-                y = cvg[ start_idx: ]
-
-            # if the entire region has no coverage:
-            # do not try to infer reasonable upstream coverage
-            if np.sum(y) == 0:
-                add_us_ext_dict[cond].append(0)
-                continue
-
-            # get the cumulative distribution of this coverage
-            cum_frac = np.cumsum( y / float(np.sum(y)))
-            x_range = np.arange(len(cum_frac))
-            diag_vals = np.cumsum( x_range / float(np.sum(x_range)))
-    
-    
-            ###
-            # first
-            ###
-            # get the difference to the diagonal;
-            # if the strongest difference to the diagonal
-            # is negative it indicates that the coverage
-            # is rather increasing towards the upstream extension
-            # -> use the entire region in this case
-            min_diff = np.min( cum_frac - diag_vals)
-            max_diff = np.max( cum_frac - diag_vals)
-
-            abs_max_diff = min_diff if abs(min_diff) >= abs(max_diff) else max_diff
-            if abs_max_diff == min_diff:
-                add_us_ext_dict[cond].append( default_add_us_ext )
-        
-
-            ###
-            # second
-            ###
-            # fit a linear regression line to the cumulative distribution
-   
-            # make an initial fit for the entire region and obtain
-            # the r-squared for this as reference
-            slope_start, intercept_start, r_val_start, p_val_start, std_err_start = stats.linregress(x_range,cum_frac)
-            pred_vals_start = np.array(slope_start * x_range + intercept_start)
-            residuals_start = pred_vals_start - cum_frac
-            diffs_from_mean_start = cum_frac - np.mean(cum_frac)
-            start_r_sq = 1 - (np.sum( residuals_start ** 2) / np.sum( diffs_from_mean_start ** 2))
-
-    
-
-            # iterate over the positions of the region
-            # to find the best break point
-            best_rsquared = start_r_sq
-            best_pos = len(cum_frac) - 100
-
-            # # test -->
-            # best_x_ds = None
-            # best_x_us = None
-            # best_pred_vals_ds = None
-            # best_pred_vals_us = None
-            # # <-- test
-            for curr_break_point_idx in range(10, len(y) - 10):
-                # downstream part
-                x_ds = x_range[:curr_break_point_idx]
-                y_ds = cum_frac[:curr_break_point_idx]
-                slope_ds, intercept_ds, r_value_ds, p_value_ds, std_err_ds = stats.linregress(x_ds,y_ds)
-                pred_vals_ds = np.array(slope_ds*x_ds + intercept_ds)
-                residuals_ds = pred_vals_ds - y_ds
-                differences_from_mean_ds = y_ds - np.mean(y_ds)
-
-                # upstream_part
-                x_us = x_range[curr_break_point_idx : ]
-                y_us = cum_frac[curr_break_point_idx : ]
-                # don't use a fitted line but the mean of this region here
-                pred_vals_us = np.ones(len(y_us)) * np.mean(y_us)
-                residuals_us = pred_vals_us - y_us
-                differences_from_mean_us = y_us - np.mean(y_us)
-
-                # calculate the overall R-squared
-                r_squared = 1 - (np.sum( np.append(residuals_ds,residuals_us) ** 2) / np.sum( np.append( differences_from_mean_ds, differences_from_mean_us) ** 2))
-
-                if r_squared > best_rsquared:
-                    best_rsquared = r_squared
-                    best_pos = curr_break_point_idx
-                    # # test -->
-                    # best_x_ds = x_ds
-                    # best_x_us = x_us
-                    # best_pred_vals_ds = pred_vals_ds
-                    # best_pred_vals_us = pred_vals_us
-                    # # <-- test
-
-            # 100 nt were added downstream of the exon start
-            # so report an error if the best_pos is within this region
-            # use the full region instead
-            if best_pos <= 100:
-                # syserr(("[ERROR] Inferred position for end of upstream extension " +
-                #"region is within the exon %s. 0 nt are used as upstream extension!\n") 
-                # % exon_id)
-                add_us_ext_dict[cond].append(0)
-
-            else:
-
-                # # test -->
-                # if best_x_us is not None:
-                #     fig = plt.figure()
-                #     ax = plt.subplot(111)
-                #     ax.plot(x_range, cum_frac, 'k')
-                #     ax.plot(best_x_ds, best_pred_vals_ds, 'b')
-                #     ax.plot(best_x_us, best_pred_vals_us, 'r')
-                #     fig.savefig('error_us_ext_inference.png')
-                #     plt.close()
-                # # --> test
-                # # return best_pos - 100
-                add_us_ext_dict[cond].append( best_pos - 100 )
-
-    return add_us_ext_dict
-            
+    return curr_time.strftime("%c")            
     
 def find_distal_site(site,
                      ex_start,
@@ -1430,34 +1277,7 @@ def get_pA_set(exon_id,
     # third part
     ######
 
-    # check whether the upsream exon extension is shorter than what
-    # was passed as argument (stored as add_us_ext)
-
-    # # if the distance of the proximal poly(A) site to the exon start
-    # # is big enough, no upstream extension is necessary
-    # if isinstance( polyA_sites[0][0], list):
-    #     if(( strand  == "+" and polyA_sites[0][0][1].start - options.read_length - ex_start >= options.min_coverage_region) or
-    #        (strand  == "-" and ex_start - polyA_sites[0][0][1].end - options.read_length >= options.min_coverage_region)):
-    #         new_add_us_ext = {}
-    #         for cond in bp_coverages_dict:
-    #             new_add_us_ext[cond] = []
-    #             for cvg in bp_coverages_dict[cond]:
-    #                 new_add_us_ext[cond].append(0)
-    #     else:
-    #         new_add_us_ext = infer_us_ext_region(exon_structure, region, bp_coverages_dict, valid_mean_cvg_dict, add_us_ext, exon_id)
-    # else:
-    #     if(( strand  == "+" and polyA_sites[0][1].start - options.read_length - ex_start >= options.min_coverage_region) or
-    #        (strand  == "-" and ex_start - polyA_sites[0][1].end - options.read_length >= options.min_coverage_region)):
-    #         new_add_us_ext = {}
-    #         for cond in bp_coverages_dict:
-    #             new_add_us_ext[cond] = []
-    #             for cvg in bp_coverages_dict[cond]:
-    #                 new_add_us_ext[cond].append(0)
-    #     else:
-    #         new_add_us_ext = infer_us_ext_region(exon_structure, region, bp_coverages_dict, valid_mean_cvg_dict, add_us_ext, exon_id)
-
-    # add_us_ext = new_add_us_ext
-
+    # not necessary anymore
 
     ######
     # fourth part
