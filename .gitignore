@@ -9,5 +9,9 @@ PAQR/log_output.log
 PAQR/HNRNPC_KD/
 PAQR/data/samplewise_TIN/
 PAQR/.snakemake/
-KAPAC/doIt.sh
 PAQR/scripts/deNovo-used-sites-and-usage-inference.testVersion.py
+KAPAC/doIt.sh
+KAPAC/RESULTS/
+KAPAC/RESULTS.log
+KAPAC/DATA/kmer_counts_all.tsv
+
