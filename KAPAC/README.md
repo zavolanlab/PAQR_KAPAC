@@ -46,27 +46,27 @@ KAPAC takes the following options:
 
 * __--expression_pseudocount [DEFAULT=1.0]__: The pseudocount that should be add to the expression values prior going to log-space.
 
-* __--row_center_expression [DEFAULT=TRUE]__: If set, the expression matrix (see option --expression_matrix) will be row-centered. That is, changes in relative usage across samples will be explained.
+* __--row_center_expression [DEFAULT=TRUE]__: If set TRUE, the expression matrix (see option --expression_matrix) will be row-centered. That is, changes in relative usage across samples will be explained.
 
 * __--sitecount_matrix [REQUIRED]__: The site count matrix (see above).
 
 * __--min_kmer_abundance_fraction [DEFAULT=0.01]__: The fraction of poly(A) sites that needs to contain counts for a specific k-mer in order to be considered. That is, k-mers that have counts for a smaller fraction of poly(A) sites in the sitecount matrix (see option --sitecount_matrix) will not be considered in the KAPAC run. 
 
-* __--consider_excess_counts_only [DEFAULT=TRUE]__: If set, background correction will be performed. That is, site counts will be corrected by the number of counts that are expected to be found per chance given the considered region length (see option --considered_region_length).
+* __--consider_excess_counts_only [DEFAULT=TRUE]__: If set TRUE, background correction will be performed. That is, site counts will be corrected by the number of counts that are expected to be found per chance given the considered region length (see option --considered_region_length).
 
 * __--considered_region_length [REQUIRED]__: The length of the region in which the k-mers have been counted (e.g. needed for background correction, see option --consider_excess_counts_only).
 
 * __--selected_motifs [DEFAULT=all]__: Per default, all k-mers present in the sitecount matrix (see option --sitecount_matrix) found in a high enough fraction of poly(A) sites (see option --min_kmer_abundance_fraction) will be considered in the KAPAC run. Alternatively, a file can be provided which contains the k-mers that should be considered in a column named "motif".
 
-* __--create_plots_for_each_motif [DEFAULT=FALSE]__: If set, for each kmer plots will be created (NOTE: dependent on the sitecount matrix (see option --sitecount_matrix) and the selected k-mers (see option --selected_motifs), thousands of directories and files might be created).
+* __--create_plots_for_each_motif [DEFAULT=FALSE]__: If set TRUE, for each kmer plots will be created (NOTE: dependent on the sitecount matrix (see option --sitecount_matrix) and the selected k-mers (see option --selected_motifs), thousands of directories and files might be created).
 
-* __--create_files_for_each_motif [DEFAULT=FALSE]__: If set, for each kmer detailed files (activities, errors, z-scores)  will be created (NOTE: dependent on the sitecount matrix (see option --sitecount_matrix) and the selected k-mers (see option --selected_motifs), thousands of directories and files might be created).
+* __--create_files_for_each_motif [DEFAULT=FALSE]__: If set TRUE, for each kmer detailed files (activities, errors, z-scores)  will be created (NOTE: dependent on the sitecount matrix (see option --sitecount_matrix) and the selected k-mers (see option --selected_motifs), thousands of directories and files might be created).
 
 * __--number_of_randomized_runs [DEFAULT=1000]__: The number of runs done with randomized expression to k-mer count associations in order to calculate adjusted p-values for the reported activity difference z-scores.
 
-* __--verbose [DEFAULT=TRUE]__: If set, the script will be verbose (reporting detailed infos on what is done).
-
 * __--results_dir [REQUIRED]__: The directory to which the results will be written.
+
+* __--verbose [DEFAULT=TRUE]__: If set TRUE, the script will be verbose (reporting detailed infos on what is done).
 
 * __--help__: Show the KAPAC help message and exit
 
