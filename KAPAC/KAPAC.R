@@ -30,7 +30,7 @@ option_list <- list(
   make_option(c("--expression_pseudocount"), default=1.0, action="store", type="double", help="The pseudocount that should be add to the expression values prior going to log-space."),
   make_option(c("--consider_excess_counts_only"), default=TRUE, action="store", type="logical", help="Background correction: should the motif counts be corrected by the number of motifs that are expected to be found per chance."),
   make_option(c("--considered_region_length"), action="store", type="double", help="Background correction: The length of the regions in which the k-mers are counted (needed for background correction)."),
-  make_option(c("--min_kmer_abundance_fraction"), action="store", type="double", help="The fraction of (all) poly(A) sites that needs to contain a specific k-mer in order to consider the k-mer. E.g. 0.01 would require that a k-mer is found in at least 1% of all sites."),
+  make_option(c("--min_kmer_abundance_fraction"), default=0.01, action="store", type="double", help="The fraction of (all) poly(A) sites that needs to contain a specific k-mer in order to consider the k-mer. E.g. 0.01 would require that a k-mer is found in at least 1% of all sites."),
   make_option(c("--number_of_randomized_runs"), default=1000, action="store", type="double", help="The number of runs done with randomized expression to k-mer count associations."),
   make_option(c("--pas_overlap_col"), action="store", type="character", help="The column name of the column in the 'expression_matrix' that contains 'OK' for non overlapping poly(A) sites and 'OVERLAP' otherwise."),
   make_option(c("--verbose"), default=TRUE, action="store", type="logical", help="Should the script be verbose (reporting detailed infos on what is done)."))
@@ -78,7 +78,7 @@ docs_80_dashes = "--------------------------------------------------------------
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# Create nucleotides frequency matrix
+# Create the nucleotides frequency vector
 # -----------------------------------------------------------------------------
 # In case we want to background correct, we will use the following
 # frequencies and report it to the user
@@ -1584,63 +1584,65 @@ write_incl_rownames(data=results.single_kmer_per_run.sorted[,cols_to_write],
 # ---------------------------------------------------------------------------
 # Since in the sitecount matrices we only consider k-mers that have been found
 # in the defined region, it can be that we do not have every k-mer represented
-# in the sitecount matrices. Such k-mers we have to add by hand setting them
-# to 0.0 counts
+# in the sitecount matrix. This can also happen due to filtering out k-mers 
+# based on their abundance (--min_kmer_abundance_fraction). For such k-mers 
+# we still might want to have output files. One can create them as shown 
+# below.
 # ---------------------------------------------------------------------------
-if (opt$create_files_for_each_motif & (opt$selected_motifs != "all"))
-{
-  # get k-mers for which a result is requested, but which was not considered
-  # in the fit (maybe also because there do not exist counts in the currently
-  # investigated region).
-  missing_kmers = setdiff(selected_kmers, colnames(kapac.result[["Ns"]]))
-  
-  if (length(missing_kmers) > 0)
-  {
-    if (opt$verbose) {
-      message(paste(docs_80_unerlines, sep=""))
-      message(paste(docs_80_dashes, sep=""))
-      message(paste("[INFO] WRITING FILES FOR K-MERS THAT ARE REQUESTED (--selected_kmers) BUT DO NOT HAVE COUNTS.", sep=""))
-    }
-    
-    # -----------------------------------------------------------------------------
-    # create a matrix that contains only 0.0 as activities and also as deltas
-    # HINT: if a k-mer is not found at all within a region, it should have an 
-    #       activity of 0.0 and we are also 100% about this (delta=0.0).
-    template_matrix = t(kapac.result$Ahat)
-    template_matrix[,1] = 0.0
-    
-    ##kmer = missing_kmers[1]
-    for (kmer in missing_kmers)
-    {
-      # create the k-mer matrix
-      kmer_matrix = template_matrix
-      colnames(kmer_matrix) = kmer
-      
-      # -----------------------------------------------------------------------------
-      # create the results directory
-      path_kmer_results_dir = paste(opt$results_dir, kmer, sep="/")
-      dir.create(path_kmer_results_dir, showWarnings=FALSE, recursive=TRUE)
-      
-      # prepare a matrix containing the z-scores (sorted)
-      overall_z_scores = as.matrix(c(0.0),nrow=1, ncol=1)
-      rownames(overall_z_scores) = kmer
-      colnames(overall_z_scores) = 'z_score'
-      
-      # -----------------------------------------------------------------------------
-      # write out the zscores
-      write_incl_rownames(data=overall_z_scores,
-                          col_name='pwm', 
-                          filename=paste(path_kmer_results_dir, '/zscore', sep=''))
-      
-      # write out the activities
-      write_incl_rownames(data=kmer_matrix,
-                          col_name='sample_id', 
-                          filename=paste(path_kmer_results_dir, '/activities', sep=''))
-      
-      # write out the activities
-      write_incl_rownames(data=kmer_matrix,
-                          col_name='sample_id', 
-                          filename=paste(path_kmer_results_dir, '/deltas', sep=''))
-    }
-  }
-}
+# if (opt$create_files_for_each_motif & (opt$selected_motifs != "all"))
+# {
+#   # get k-mers for which a result is requested, but which was not considered
+#   # in the fit (maybe also because there do not exist counts in the currently
+#   # investigated region).
+#   missing_kmers = setdiff(selected_kmers, colnames(kapac.result[["Ns"]]))
+#   
+#   if (length(missing_kmers) > 0)
+#   {
+#     if (opt$verbose) {
+#       message(paste(docs_80_unerlines, sep=""))
+#       message(paste(docs_80_dashes, sep=""))
+#       message(paste("[INFO] WRITING FILES FOR K-MERS THAT ARE REQUESTED (--selected_kmers) BUT DO NOT HAVE COUNTS.", sep=""))
+#     }
+#     
+#     # -----------------------------------------------------------------------------
+#     # create a matrix that contains only 0.0 as activities and also as deltas
+#     # HINT: if a k-mer is not found at all within a region, it should have an 
+#     #       activity of 0.0 and we are also 100% about this (delta=0.0).
+#     template_matrix = t(kapac.result$Ahat)
+#     template_matrix[,1] = 0.0
+#     
+#     ##kmer = missing_kmers[1]
+#     for (kmer in missing_kmers)
+#     {
+#       # create the k-mer matrix
+#       kmer_matrix = template_matrix
+#       colnames(kmer_matrix) = kmer
+#       
+#       # -----------------------------------------------------------------------------
+#       # create the results directory
+#       path_kmer_results_dir = paste(opt$results_dir, kmer, sep="/")
+#       dir.create(path_kmer_results_dir, showWarnings=FALSE, recursive=TRUE)
+#       
+#       # prepare a matrix containing the z-scores (sorted)
+#       overall_z_scores = as.matrix(c(0.0),nrow=1, ncol=1)
+#       rownames(overall_z_scores) = kmer
+#       colnames(overall_z_scores) = 'z_score'
+#       
+#       # -----------------------------------------------------------------------------
+#       # write out the zscores
+#       write_incl_rownames(data=overall_z_scores,
+#                           col_name='pwm', 
+#                           filename=paste(path_kmer_results_dir, '/zscore', sep=''))
+#       
+#       # write out the activities
+#       write_incl_rownames(data=kmer_matrix,
+#                           col_name='sample_id', 
+#                           filename=paste(path_kmer_results_dir, '/activities', sep=''))
+#       
+#       # write out the activities
+#       write_incl_rownames(data=kmer_matrix,
+#                           col_name='sample_id', 
+#                           filename=paste(path_kmer_results_dir, '/deltas', sep=''))
+#     }
+#   }
+# }
