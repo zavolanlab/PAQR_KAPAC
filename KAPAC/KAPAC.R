@@ -6,8 +6,6 @@
 # Developed in R version: R version 3.3.1
 # -----------------------------------------------------------------------------
 rm(list=ls())
-##getwd()
-##setwd("/scicore/home/zavolan/GROUP/PolyA/manuscripts/manuscript_KAPAC/PAQR_KAPAC_sourceCode/KAPAC")
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
@@ -1315,12 +1313,12 @@ if (opt$verbose) {
   message(paste("[INFO] FILTERING OUT K-MERS HAVING NO/LOW ABUNDANCE.", sep=""))
   
   # report how many k-mers will be dropped
-  message(paste("[INFO] Percentage of filtered out k-mers: ", 
-                (fraction_of_filtered_out_kmers*100), "[%] (=", length(filtered_out_kmers), " k-mers). ", sep=""))
-
-  # report how many k-mers will be dropped
   message(paste("[INFO] Minimum k-mer abundance fraction to be considered (--min_kmer_abundance_fraction): ", 
                 opt$min_kmer_abundance_fraction, "\n", sep=""))
+  
+  # report how many k-mers will be dropped
+  message(paste("[INFO] Percentage of filtered out k-mers: ", 
+                (fraction_of_filtered_out_kmers*100), "[%] (=", length(filtered_out_kmers), " k-mers). ", sep=""))
 }
 
 # background correct, if wanted
