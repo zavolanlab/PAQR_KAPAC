@@ -10,3 +10,4 @@ PAQR/HNRNPC_KD/
 PAQR/data/samplewise_TIN/
 PAQR/.snakemake/
 KAPAC/doIt.sh
+PAQR/scripts/deNovo-used-sites-and-usage-inference.testVersion.py

@@ -600,137 +600,6 @@ def check_global_best_breaking_point(bp_cvg,
     # no break point was found; return "None"
     return( best_pos_idx, best_pos_idx )
     
-# def check_global_best_breaking_point(bp_cvg,
-#                                      samples_to_consider,
-#                                      used_sites_positions,
-#                                      start_idx,
-#                                      end_idx,
-#                                      valid_conds_set,
-#                                      min_coverage_region):
-#     """Find best breaking point irrespective of poly(A) sites.
-#     Function to process single sites."""
-    
-#     global_best_break_point_idx = None
-#     global_best_break_point_mse_ratio = 2
-
-#     for cond in bp_coverages_dict:
-#         if cond not in valid_conds_set:
-#             continue
-
-#         best_break_points_per_cond = {}
-#         mses_of_best_break_points = {}
-#         best_site2best_index = {}
-        
-#         cvg_idx = -1
-#         for cvg in bp_coverages_dict[cond]:
-#             cvg_idx += 1
-
-#             # if the current sample is not supporting any of the
-#             # break points in the current region
-#             # ignore it while searching for global break points
-#             if not samples_to_consider[cond][cvg_idx]:
-#                 continue
-            
-#             cvg_global = cvg[start_idx:end_idx]
-#             global_mse = np.mean( (cvg_global - np.mean(cvg_global))**2 )
-#             smallest_mse = global_mse
-#             best_pos_idx = None
-#             for pos_idx in range(start_idx + min_coverage_region, end_idx - min_coverage_region):
-#                 # get mse for the current region
-#                 cvg_right = cvg[pos_idx + 1: end_idx]
-#                 cvg_left = cvg[start_idx:pos_idx]
-#                 cov_diff = cvg_left - np.mean(cvg_left)
-#                 cov_diff = np.append( cov_diff, (cvg_right - np.mean(cvg_right) ) )
-#                 curr_mse = np.mean( cov_diff**2 )
-#                 if curr_mse < smallest_mse:
-#                     smallest_mse = curr_mse
-#                     best_pos_idx = pos_idx
-
-#             if best_pos_idx is not None:
-                
-#                 if best_pos_idx not in used_sites_positions:
-#                     # increment the number of invalid global break points in this condition
-#                     if -1 not in best_break_points_per_cond:
-#                         best_break_points_per_cond[-1] = 0
-#                         mses_of_best_break_points[-1] = []
-#                         best_site2best_index[-1] = []
-#                     best_break_points_per_cond[-1] += 1
-#                     mses_of_best_break_points[-1].append(smallest_mse)
-#                     best_site2best_index[-1].append(best_pos_idx)
-                    
-#                 else:
-#                     # valid break point found
-#                     # store the number of times each poly(A) site contains the best break
-#                     # point for the current condition
-#                     # along with all inferred smallest_mse per site
-#                     overlapping_site = used_sites_positions[best_pos_idx]
-
-#                     if overlapping_site not in best_break_points_per_cond:
-#                         best_break_points_per_cond[overlapping_site] = 0
-#                         mses_of_best_break_points[overlapping_site] = []
-#                         best_site2best_index[overlapping_site] = []
-#                     best_break_points_per_cond[overlapping_site] += 1
-#                     mses_of_best_break_points[overlapping_site].append(smallest_mse)
-#                     best_site2best_index[ overlapping_site ].append(best_pos_idx)
-            
-
-#         # focus on the site with the most breaks points across all
-#         # samples of this condition (-1 means anywhere outside the poly(A) site regions)
-#         tmp_list = sorted(best_break_points_per_cond, 
-#                           key = best_break_points_per_cond.get, 
-#                           reverse = True)
-
-#         # ensure that if multiple sites have the same count
-#         # the most proximal valid site is taken
-#         top_list = [tmp_list[0]]
-#         for i in range(1, len(tmp_list)):
-#             if best_break_points_per_cond[ tmp_list[0] ] == best_break_points_per_cond[ tmp_list[i] ]:
-#                 top_list.append( tmp_list[i] )
-#             else:
-#                 break
-#         if len(top_list) > 1:
-#             if -1 in top_list:
-#                 top_list.remove(-1)
-#             top_site = sorted(top_list)[0]
-#         else:
-#             top_site = top_list[0]
-
-#         # # if (top_site != -1 and 
-#         # #     best_break_points_per_cond[ top_site ] / float( len(bp_coverages_dict[cond] ) ) >= 0.5):
-                
-#         #     # site with valid break point found
-#         #     #
-#         #     # for at least half of the samples from condition cond the top site
-#         #     # has the best split
-            
-#         #     avg_smallest_mse = np.mean( mses_of_best_break_points[ top_site ] )
-#         #     curr_ratio = avg_smallest_mse / global_mse
-#         #     if curr_ratio < global_best_break_point_mse_ratio:
-#         #         global_best_break_point_mse_ratio = curr_ratio
-#         #         global_best_break_point_idx = best_site2best_index[ top_site ]
-                
-#         # else:
-#         #     # this exon part has the best breaking point 
-#         #     # outside of polyA site regions
-#         #     return (0, global_best_break_point_mse_ratio)
-
-#         if top_site == -1:
-#             # for the current condition the best supported break point
-#             # lies outside of poly(A) site covered regions
-#             best_mse_pos_idx = best_site2best_index[-1][ mses_of_best_break_points[-1].index( np.min( mses_of_best_break_points[-1] ) ) ]
-#             return(0, best_mse_pos_idx)
-
-#         else:
-#             # site with valid break point found
-#             # update the break point in case the current break point has an improved average mse
-#             curr_avg_ratio = np.mean( np.array( mses_of_best_break_points[ top_site ] ) / float( global_mse) )
-#             if curr_avg_ratio < global_best_break_point_mse_ratio:
-#                 global_best_break_point_mse_ratio = curr_avg_ratio
-#                 tmp_min_mse_idx = mses_of_best_break_points[top_site].index( np.min( mses_of_best_break_points[top_site] ) )
-#                 global_best_break_point_idx = best_site2best_index[ top_site ][ tmp_min_mse_idx ]
-            
-#     return (global_best_break_point_idx, global_best_break_point_idx)
-    
 def check_global_best_breaking_points(bp_cvg,
                                       cond,
                                       sample_idx,
@@ -2064,6 +1933,7 @@ def main(options):
     #     exon = res_tu[0]
     #     used_sites = res_tu[1]
     #     rel_use_array = res_tu[2]
+    #     expression_array = res_tu[3]
     #     if len(used_sites) == 0 and len(rel_use_array) == 0:
     #         continue
     #     elif len(used_sites) == 0 or len(rel_use_array) == 0:
@@ -2093,6 +1963,18 @@ def main(options):
     #                                                                  exon,
     #                                                                  transcript,
     #                                                                  rel_use_array[site_idx]))
+
+    #           ofile.write("%s\t%i\t%i\t%s\t%s\t%s\t%i\t%i\t%s\t%s\t%s\n" % (site[1].chrom,
+    #                                                                         site[1].start,
+    #                                                                         site[1].end,
+    #                                                                         site[0],
+    #                                                                         site[2],
+    #                                                                         site[1].strand,
+    #                                                                         cnt,
+    #                                                                         total_number_of_sites,
+    #                                                                         exon,
+    #                                                                         transcript,
+    #                                                                         expression_array[site_idx]))
 
 
 if __name__ == '__main__':

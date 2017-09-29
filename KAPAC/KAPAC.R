@@ -2,20 +2,12 @@
 # -----------------------------------------------------------------------------
 # KAPAC (K-mer activity on poly(A) site choice)
 # -----------------------------------------------------------------------------
-# Author: Andreas J. Gruber (aj.gruber@unibas.ch)
-# Developed in R version: 3.4.0 (2017-04-21)
+# Author: Andreas J. Gruber 
+# Developed in R version: R version 3.3.1
 # -----------------------------------------------------------------------------
-
-# _____________________________________________________________________________
-# -----------------------------------------------------------------------------
-# DEV - FIXME: remove this afterwards
-# -----------------------------------------------------------------------------
-# Rstudio on BC2: https://services.scicore.unibas.ch/rstudio/
-# clean the workspace
 rm(list=ls())
 ##getwd()
-##setwd("/scicore/home/zavolan/gruberan/working_dir/paper_CFIm_kapac/01_KAPAC_final_runs/KAPAC_source_code/scripts_for_GIT")
-# -----------------------------------------------------------------------------
+##setwd("/scicore/home/zavolan/GROUP/PolyA/manuscripts/manuscript_KAPAC/PAQR_KAPAC_sourceCode/KAPAC")
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
@@ -79,16 +71,6 @@ if (debugging_mode == TRUE)
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# Create normalized expression values
-# -----------------------------------------------------------------------------
-# FIXME: Instead we can also filter out all PAS that have a missing
-#        value in one of the samples, since otherwise it might be
-#        that we try to interpret a foldchange (=0) in a contrast in which
-#        we have not seen any read of that PAS.
-# -----------------------------------------------------------------------------
-
-# _____________________________________________________________________________
-# -----------------------------------------------------------------------------
 # variables for writing messages, warnings and errors
 # -----------------------------------------------------------------------------
 docs_80_unerlines = "_______________________________________________________________________________"
@@ -96,18 +78,9 @@ docs_80_dashes = "--------------------------------------------------------------
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# Hard coded variables
+# Create nucleotides frequency matrix
 # -----------------------------------------------------------------------------
-# create a matrix that contains the nt frequencies around poly(A) sites
-# Analysis was done here: 
-# .../GROUP/PolyA/clusters/Homo_sapiens/8.0/liftOver_GRCh38/clusters.filt.merged.hg38.noOverlappingClusters.canonical_chr.anno.repSite.strict_chromosomes.200u.200d.ntComp
-#
-# A       0.2973
-# C       0.1935
-# G       0.2007
-# T       0.3084
-#
-# in case we want to background correct, we will use the following
+# In case we want to background correct, we will use the following
 # frequencies and report it to the user
 nt_frequency_vector = c(0.2973, 0.1935, 0.2007, 0.3084)
 names(nt_frequency_vector) = c("A","C","G","T")
