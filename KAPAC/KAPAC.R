@@ -1421,7 +1421,7 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
   # in case the number of randomized runs is smaller than the recommended
   # number, drop a warning.
   if (opt$number_of_randomized_runs < recommended_zstatistic_sample_size) {
-    message(paste("[WARNING] The chosen number of randomized runs ",
+    warning(paste("[WARNING] The chosen number of randomized runs ",
                   "'--number_of_randomized_runs' (=", 
                   opt$number_of_randomized_runs, ") ",
                   "is smaller than the minimum number required (=",
@@ -1443,7 +1443,7 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
   # in case the number of randomized runs is smaller than the recommended
   # number, drop a warning.
   if (opt$number_of_randomized_runs < recommended_zstatistic_sample_size) {
-    message(paste("[WARNING] The chosen number of randomized runs ",
+    warning(paste("[WARNING] The chosen number of randomized runs ",
                   "'--number_of_randomized_runs' (=", 
                   opt$number_of_randomized_runs, ") ",
                   "is relatively small and might lead to variable results. ",
@@ -1553,7 +1553,7 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
   # give some user feedback
   if (percent_of_not_norm_distributed_kmers > 0.0)
   {
-    message(paste("[WARNING] ", percent_of_not_norm_distributed_kmers, 
+    warning(paste("[WARNING] ", percent_of_not_norm_distributed_kmers, 
                   " percent of the z-scores are not normal distributed ",
                   " (using a p-value threshold of ", not_norm_pval_threshold, ").", 
                   " Reported z-scores and p-values for activity differences ",
