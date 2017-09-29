@@ -194,13 +194,17 @@ write_incl_rownames <- function(data, col_name, filename, verbose=FALSE)
   data.incl_rownames =
     cbind(rownames(data),
           data)
+  
   # create a column name
   colnames(data.incl_rownames)[1] = col_name
+  
   # create the full filename
-  full_filename = paste(filename, '.tab', sep='')
+  full_filename = paste(filename, '.tsv', sep='')
+  
   # write the data to the file
   write.table(data.incl_rownames, file=full_filename,
               quote=F, row.names=F, col.names=T, sep="\t")
+  
   # give some feedback to the user
   if (verbose) {
     message(paste('[INFO] Wrote successfully: ', full_filename, '\n', sep=''))
@@ -1313,7 +1317,7 @@ if (opt$verbose) {
                 (fraction_of_filtered_out_kmers*100), "[%] (=", length(filtered_out_kmers), " k-mers). ", sep=""))
 
   # report how many k-mers will be dropped
-  message(paste("[INFO] Minimum k-mer abundance fraction to be considered was chosen (--min_kmer_abundance_fraction) to be: ", 
+  message(paste("[INFO] Minimum k-mer abundance fraction to be considered (--min_kmer_abundance_fraction): ", 
                 opt$min_kmer_abundance_fraction, "\n", sep=""))
 }
 
@@ -1427,6 +1431,12 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
                   "in the final results. ",
                   sep=""))
   }
+  
+  # specify the columns that should be written to the results file
+  cols_to_write = 
+    c("mean_diff_zscores",
+      "mean_diff_activity",
+      "mean_diff_delta")
   
 } else {
 
@@ -1552,6 +1562,14 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
                   not_norm_pval_colname, "' column in the results).",
                   sep=""))
   }
+
+  # specify the columns that should be written to the results file
+  cols_to_write = 
+    c("mean_diff_zscores",
+      "mean_diff_activity",
+      "mean_diff_delta",
+      "mean_diff_zscores_PADJ",
+      not_norm_padj_colname)
 }
 
 # _____________________________________________________________________________
@@ -1570,15 +1588,9 @@ results.single_kmer_per_run.sorted =
                               !(colnames(kapac.result_matrix) %in% kapac.result_matrix.rand_run_cols)]
 
 # write out the zscores
-cols_to_write = 
-  c("mean_diff_zscores",
-    "mean_diff_activity",
-    "mean_diff_delta",
-    "mean_diff_zscores_PADJ",
-    not_norm_padj_colname)
-write_incl_rownames(data=results.single_kmer_per_run.sorted[,cols_to_write],
+write_incl_rownames(data=results.single_kmer_per_run.sorted[, cols_to_write, drop=F],
                     col_name='kmer', 
-                    filename=paste(opt$results_dir, '/', top_kmer_candidates_selection_criterion, '_ABSOLUTE_sorted', sep=''))
+                    filename=paste(opt$results_dir, '/', top_kmer_candidates_selection_criterion, sep=''))
 
 # ___________________________________________________________________________
 # ---------------------------------------------------------------------------
