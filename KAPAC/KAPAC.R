@@ -11,7 +11,7 @@ rm(list=ls())
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# get the parameters
+# Read options
 # -----------------------------------------------------------------------------
 # load libraries
 library(optparse)
@@ -20,7 +20,7 @@ option_list <- list(
   make_option(c("--sample_design"), action="store", type="character", help="The sample design file."),
   make_option(c("--expression_matrix"), action="store", type="character", help="The poly(A) site expression matrix."),
   make_option(c("--sitecount_matrix"), action="store", type="character", help="The site count matrix."),
-  make_option(c("--rowname_to_group_mapping_file"), action="store", type="character", help="The file that contains the mapping from rownames to groups."),
+  make_option(c("--pas_exon_associations"), action="store", type="character", help="The file that contains the associations of poly(A) sites to the exon on which they are located."),
   make_option(c("--selected_motifs"), default="all", action="store", type="character", help="The kmers that should be considered. Using 'all' [=default] will run KAPAC on all k-mers in the motifcount_matrix."),
   make_option(c("--results_dir"), action="store", type="character", help="The directory to which the result files will be written."),
   make_option(c("--create_plots_for_each_motif"), default=FALSE, action="store", type="logical", help="If set, for each kmer plots will be created (NOTE: dependent on the sitecount matrix (--sitecount_matrix) and the selected k-mers (--selected_motifs), thousands of directories and files might be created)."),
@@ -32,7 +32,6 @@ option_list <- list(
   make_option(c("--considered_region_length"), action="store", type="double", help="Background correction: The length of the regions in which the k-mers are counted (needed for background correction)."),
   make_option(c("--min_kmer_abundance_fraction"), default=0.01, action="store", type="double", help="The fraction of (all) poly(A) sites that needs to contain a specific k-mer in order to consider the k-mer. E.g. 0.01 would require that a k-mer is found in at least 1% of all sites."),
   make_option(c("--number_of_randomized_runs"), default=1000, action="store", type="double", help="The number of runs done with randomized expression to k-mer count associations."),
-  make_option(c("--pas_overlap_col"), action="store", type="character", help="The column name of the column in the 'expression_matrix' that contains 'OK' for non overlapping poly(A) sites and 'OVERLAP' otherwise."),
   make_option(c("--verbose"), default=TRUE, action="store", type="logical", help="Should the script be verbose (reporting detailed infos on what is done)."))
 opt_parser <- OptionParser(usage="Usage: %prog [OPTIONS]",
                            option_list = option_list, add_help_option=TRUE)
@@ -52,7 +51,7 @@ if (debugging_mode == TRUE)
   opt$sample_design = "DATA/kapac_design.tsv"
   opt$expression_matrix = "DATA/pas_expression.tsv"
   opt$sitecount_matrix = "DATA/kmer_counts.tsv"
-  opt$rowname_to_group_mapping_file = "DATA/pas2exon.tsv"
+  opt$pas_exon_associations = "DATA/pas2exon.tsv"
   opt$selected_motifs = "DATA/selected_kmers.tsv"
   #opt$selected_motifs = "all"
   opt$results_dir = "RESULTS"
@@ -65,7 +64,6 @@ if (debugging_mode == TRUE)
   opt$considered_region_length = 50
   opt$min_kmer_abundance_fraction = 0.01
   opt$number_of_randomized_runs = 30
-  opt$pas_overlap_col = "PAS_overlap"
   opt$verbose = TRUE
 }
 
@@ -99,6 +97,10 @@ top_kmer_candidates_selection_criterion = "mean_diff_zscores"
 # The threshold that will be used in order to consider a distribution to be
 # normal.
 not_norm_pval_threshold = 0.05
+
+# -----------------------------------------------------------------------------
+# The name of the pas overlapping column in the expression file.
+pas_overlap_col = "PAS_overlap"
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
@@ -1222,17 +1224,17 @@ contrast_pairs = create_contrast_pairs(design_table = design_table)
 # later on
 # -----------------------------------------------------------------------------
 polyA2exon_mapping = 
-  as.matrix(read.table(opt$rowname_to_group_mapping, 
+  as.matrix(read.table(opt$pas_exon_associations, 
                        h=TRUE, 
                        as.is=T, 
                        sep="\t",
-                       row.names=1,
+                       row.names="pas",
                        comment.char="",
                        stringsAsFactors=FALSE,
                        check.names=FALSE))
 
 # get the name of the column with the exons
-exon_col=colnames(polyA2exon_mapping)[1]
+exon_col="exon"
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
@@ -1243,7 +1245,7 @@ expr_table =
              h=TRUE, 
              as.is=T, 
              sep="\t",
-             row.names=1,
+             row.names="pas",
              comment.char="",
              check.names=FALSE)
 
@@ -1256,7 +1258,7 @@ sitecount_matrix.all =
                        h=TRUE, 
                        as.is=T, 
                        sep="\t",
-                       row.names=1,
+                       row.names="pas",
                        comment.char="",
                        check.names=FALSE))
 
@@ -1384,7 +1386,7 @@ kapac.result =
                                          ctrl_idx = ctrl_idx,
                                          sitecount_matrix.group_centered = sitecount_matrix.group_centered, 
                                          expr_table = expr_table,
-                                         PAS_overlap_col = opt$pas_overlap_col,
+                                         PAS_overlap_col = pas_overlap_col,
                                          polyA2exon_mapping = polyA2exon_mapping,
                                          exon_col = exon_col,
                                          results_dir = opt$results_dir,
@@ -1465,7 +1467,7 @@ if (opt$number_of_randomized_runs < min_zstatistic_sample_size) {
                                              ctrl_idx = ctrl_idx,
                                              sitecount_matrix.group_centered = sitecount_matrix.group_centered, 
                                              expr_table = expr_table,
-                                             PAS_overlap_col = opt$pas_overlap_col,
+                                             PAS_overlap_col = pas_overlap_col,
                                              polyA2exon_mapping = polyA2exon_mapping,
                                              exon_col = exon_col,
                                              results_dir = NULL,
@@ -1591,6 +1593,12 @@ results.single_kmer_per_run.sorted =
 write_incl_rownames(data=results.single_kmer_per_run.sorted[, cols_to_write, drop=F],
                     col_name='kmer', 
                     filename=paste(opt$results_dir, '/', top_kmer_candidates_selection_criterion, sep=''))
+
+if (opt$verbose) {
+  message(paste(docs_80_unerlines, sep=""))
+  message(paste(docs_80_dashes, sep=""))
+  message(paste("[INFO] KAPAC run finished.", sep=""))
+}
 
 # ___________________________________________________________________________
 # ---------------------------------------------------------------------------
