@@ -49,7 +49,7 @@ Next, define a name for the study your samples belong to under "studies". This n
 Connect the name of your samples with the study they belong to: The config file should have one entry per study with the study name as key. Follow the example in the config file and adopt the list for "samples". This list should contain the names you use for your input samples (make sure the sample names are unique, though). Again, each sample name should have its own entry in the config file with the name of the BAM and the condition/type of the sample given as a dictionary. The value for "bam" must be the name of the BAM file (without ".bam" extension and without the pathname). All BAM files are required to be stored in the same directory. Provide the pathname to this directory as value of "dir.input".
 
 
-## Start the pipeline
+## Start the first part of the pipeline
 Before you run the pipeline, ensure that your current working directory is PAQR.
 Once you prepared your config file, you can start the pipeline by simply executing:
 ```bash
@@ -67,12 +67,45 @@ It is recommend to set the `max_cores` parameter so that mutliple steps of the p
 After the first part is finished, the transcript integrity was evaluated and only samples above the cutoff for the median TIN per sample (mTIN) will be processed in the second part.
 
 ## Second part of the pipeline
-The second part can be started immediately after successful finishing the first part. However, please consider the following caveat: It might occur that your study (or any of them, if you run numerous in parallel) did not yield any valid sample. In this case, manually check results directory of all studies for the dummy file; delete all study names from the "studies" entry in the config for which the dummy file is available; proceed part two only with those studies that have valid files
+The second part can be started immediately after successful finishing the first part. However, please consider the following caveat: It might occur that your study (or a single study of multiple ones that you run in parallel) did not yield any valid sample. In this case, manually check results directory of all studies for a file called `DUMMY_USED.out`; delete all study names from the "studies" entry in the config for which such a dummy file is available; afterwards, proceed with part two and it will only run on those studies that have valid files.
 
 ```bash
 max_cores=8 # maximum number of threads that will run in parallel
 snakemake -s part_two.Snakefile -p --cores ${max_cores} &>> log_output.log
 ```
+
+## Use case tutorial
+Let's run PAQR on an RNA-seq data set from a study of HNRNPC in HEK cells (you can find the publication [here](https://www.ncbi.nlm.nih.gov/pubmed/25719671) and the data is deposited [here](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE56010)). 
+
+The data was downloaded and mapped to the human genome with [STAR v2.5.2a](https://github.com/alexdobin/STAR). First, download the mapping files (in BAM format) and an index for each mapping file from <http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/>, for example with the following commands:
+```bash
+mkdir data/bam_files
+# control replicate 1
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/CTL_rep1.bam
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/CTL_rep1.bam.bai
+# control replicate 2
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/CTL_rep2.bam
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/CTL_rep2.bam.bai
+# HNRNPC knock-down replicate 1
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/KD_rep1.bam
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/KD_rep1.bam.bai
+# HNRNPC knock-down replicate 2
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/KD_rep2.bam
+wget -P data/bam_files/ http://www.clipz.unibas.ch/RNAseq_HNRNPC_KD_study/data/KD_rep2.bam.bai
+```
+If not yet done, open the configuration file `config.yaml` and adjust the value for "py2_env_path" (as described above). All other values are already set up for this test case. Start the first part of the analysis with:
+```bash
+max_cores=8 # maximum number of threads that will run in parallel
+snakemake -s part_one.Snakefile -p --cores ${max_cores} &> log_output.log
+```
+When the first part is finished, start the second part with:
+```bash
+max_cores=8 # maximum number of threads that will run in parallel
+snakemake -s part_two.Snakefile -p --cores ${max_cores} &>> log_output.log
+```
+Adjust the value max_cores according to your architecture. The number of cores of your machine can be obtained with `sysctl -n hw.ncpu` for Max OS X and with `nproc` for Linux systems. 
+After successfully finishing the pipeline, the results directory ("HNRNPC_KD") contains a file called "tandem_pas_expressions.rpm.filtered.tsv", which is the starting file for a KAPAC analysis.
+
 
 ## Detailed description of the single steps
 The following notes should provide more detailed information about the single steps/scripts of the pipeline.
