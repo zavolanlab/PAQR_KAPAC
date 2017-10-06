@@ -9,11 +9,8 @@ git clone ssh://git@git.scicore.unibas.ch:2222/zavolan_public/PAQR_KAPAC.git pat
 cd path/to/workdir
 ```
 
-## Use case of the pipeline
-Below, you will find a tutorial that guides you through the usage of PAQR and KAPAC based on the RNA-seq data set to study the knock-down of HNRNPC. The results for this data set are also discussed in the paper.
-
-### snakemake
-[Snakemake]{https://snakemake.readthedocs.io/en/stable/} is a workflow management system that helps to create and execute data processing pipelines. Here, it is used to run the PAQR pipeline. It requires python3 and can be installed smoothly via the bioconda package of the python anaconda distribution (shown below).
+## Prepare the virtual environment
+The execution of PAQR and KAPAC depends on specific software (like python, including several packages, or R). With the installation and activation of the virtual environment as it is shown below, you can ensure that both tools run properly.
 
 ### Step 1: Download Miniconda3
 On Linux:

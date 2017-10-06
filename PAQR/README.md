@@ -8,7 +8,7 @@ The method is actually a combination of scripts that depend on each other. To ea
 Depending on how deep your original material was sequenced (i.e. how big your input files are in terms of the memory usage), your computer might require **50 GB of available memory (RAM)** to process these files. [Snakemake](https://snakemake.readthedocs.io/en/stable/) is used to facilitate the automated execution of all analysis steps. The easiest way to make use of the pipeline is to set up a python3 and a python2 virtual environment and run the pipeline in the python3 environment. Instructions on how to install the virtual environments for the analysis are given in the README of the main directory of this repository.
 
 ### snakemake
-Snakemake is a workflow management system that helps to create and execute data processing pipelines. It requires python3 and can be most easily installed via the bioconda package of the python anaconda distribution. You're setup right after the following steps:
+[Snakemake](https://snakemake.readthedocs.io/en/stable/) is a workflow management system that helps to create and execute data processing pipelines. It is already part of the virtual environment which was introduced in the introduction README.
 
 ### activate the python 3 environment
 Please see the README file one level up. There you can find information how to install miniconda and how to create a python3 environment that is used now to run the pipeline.
