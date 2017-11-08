@@ -77,7 +77,6 @@ rule create_coverages:
 # infer used poly(A) sites based on the coverage profiles
 # and determine for those the relative usage
 #-------------------------------------------------------------------------------
-
 rule infer_relative_usage:
     input:
         coverages = lambda wildcards: expand(wildcards.study + "/coverages/{sample_na}.pkl", sample_na = [line.rstrip().split("\t")[0] for line in open(wildcards.study + "/no_bias_samples.out", "r").readlines()])

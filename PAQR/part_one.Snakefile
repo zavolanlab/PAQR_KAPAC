@@ -7,7 +7,7 @@ import os
 import numpy as np
 import yaml
 
-localrules: create_log_dir, merge_TIN_vals, TIN_assessment, plot_full_trans_TIN_distributions, all
+localrules: create_log_dir, bam_index, merge_TIN_vals, TIN_assessment, plot_full_trans_TIN_distributions, infer_valid_samples, all
 
 ################################################################################
 # define the target rule
