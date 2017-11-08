@@ -7,7 +7,7 @@ import os
 import numpy as np
 import yaml
 
-localrules: create_log_dir, bam_index, merge_TIN_vals, TIN_assessment, plot_full_trans_TIN_distributions, infer_valid_samples, all
+localrules: create_log_dir, create_log_dir_TIN_calc, bam_index, merge_TIN_vals, TIN_assessment, plot_full_trans_TIN_distributions, infer_valid_samples, all
 
 ################################################################################
 # define the target rule
@@ -36,10 +36,23 @@ rule create_log_dir:
     job output should be written to these files.
     '''
     output:
-        temp( "{study}/created_log.tmp" )
+        "{study}/logs/created_log.tmp"
     run:
         makedirs( wildcards.study + "/logs/cluster_logs" )
         shell("touch {output}")
+
+rule create_log_dir_TIN_calc:
+    ## LOCAL ##
+    ''' This step creates the log directory, if necessary.
+    This is required when jobs are submitted and the
+    job output should be written to these files.
+    '''
+    output:
+        config["dir.samplewise_TIN"] + "/logs/created_log.tmp"
+    run:
+        makedirs( config["dir.samplewise_TIN"] + "/logs/cluster_logs" )
+        shell("touch {output}")
+
 
 #-------------------------------------------------------------------------------
 # create a bam index
@@ -61,6 +74,7 @@ rule bam_index:
 #-------------------------------------------------------------------------------
 rule assess_TIN_bias_transcript_wide:
     input:
+        created_log = config["dir.samplewise_TIN"] + "/logs/created_log.tmp",
         bam = lambda wildcards: config["dir.input"] + "/" + config[wildcards.sample]["bam"] + ".bam",
         bam_index = lambda wildcards: config["dir.input"] + "/" + config[wildcards.sample]["bam"] + ".bam.bai"
     output:
@@ -92,8 +106,8 @@ rule assess_TIN_bias_transcript_wide:
 rule merge_TIN_vals:
     ##LOCAL##
     input:
-        create_log_dir = "{study}/created_log.tmp",
-        tables = lambda wildcards: expand( config["dir.samplewise_TIN"] + "/{na}.tsv", study = wildcards.study, na = config[wildcards.study]['samples'])
+        create_log_dir = "{study}/logs/created_log.tmp",
+        tables = lambda wildcards: expand( config["dir.samplewise_TIN"] + "/{na}.tsv", na = config[wildcards.study]['samples'])
     output:
         "{study}/bias.transcript_wide.TIN.tsv"
     params:
