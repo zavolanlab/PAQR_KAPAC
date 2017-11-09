@@ -1530,7 +1530,7 @@ def get_relative_usages(used_sites,
         if end_idx - start_idx < min_coverage_region:
             syserr(("[ERROR] Upstream region of site %s is too small " +
                     "for reliable mean estimation\n") % used_sites[site_idx][0])
-            return {}
+            return {}, {}
     
         for cond in bp_coverages_dict:
             counter = -1
