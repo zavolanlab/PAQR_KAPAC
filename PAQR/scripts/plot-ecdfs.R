@@ -82,19 +82,6 @@ iwanthue <- function(n, hmin=0, hmax=360, cmin=0, cmax=180, lmin=0, lmax=100,
 }
 
 ################################################################################
-# define function to infer the patient and the sample type from TCGA barcodes
-################################################################################
-
-get_tissue_code <- function(barcode){
-substring(tail(strsplit(strsplit(barcode,"_")[[1]][2], "-")[[1]], n=1),1,2)
-}
-
-get_patient_id <- function(barcode){
-head(tail(strsplit(strsplit(barcode,"_")[[1]][2], "-")[[1]], n=2),n=1)
-}
-
-
-################################################################################
 ################################################################################
 
 input <- opt$file
@@ -105,28 +92,13 @@ pdf_out <- opt$pdf
 
 # load input table
 lengthPerExon <- read.table(input, head=T, row.names = 1, check.names = FALSE)
-# sort them by patient ids (sample from the same patient are next to each other)
-patient_ids <- sapply(colnames(lengthPerExon), get_patient_id)
-lengthPerExon <- lengthPerExon[, order(patient_ids)]
-patient_ids <- patient_ids[order(patient_ids)]
-
-# colnames contains the TCGA-barcodes
-# check all cols that are from primary tumor samples
-
-tissue_code <- sapply(colnames(lengthPerExon), get_tissue_code)
 
 ################################################################################
 # define the set of used colors and the color for each column
 ################################################################################
 
 # the number of needed colors equals the number of distinct patients
-nr_colors <- length(unique( patient_ids))
-
-# if( nr_colors >= 2) {
-# colors <- rainbow(nr_colors)
-# } else {
-# colors <- rainbow(2)
-# }
+nr_colors <- length(colnames(lengthPerExon))
 
 # use johnbaums' code of iwanthue to get distinct colors
 colors <- iwanthue(nr_colors)
@@ -135,42 +107,25 @@ colors <- iwanthue(nr_colors)
 colors_per_columns <- rep("unset", dim(lengthPerExon)[2])
 # lty_per_columns <- rep(2,dim(lengthPerExon)[2])
 
-# define the color for each column (based on the patient id)
+sample_ids <- colnames(lengthPerExon)
+
+# define the color for each column (based on the sample id)
 tmp_cnt <- 0
-patients_visited_already <- c()
+samples_visited_already <- c()
 for (n in 1:dim(lengthPerExon)[2]) {
-if( patient_ids[n] %in% patients_visited_already ) {
-    colors_per_columns[n] <- colors[tmp_cnt]
-    colors_per_columns[n] <- colors[ which(patients_visited_already == patient_ids[n]) ]
+if( sample_ids[n] %in% samples_visited_already ) {
+    colors_per_columns[n] <- colors[ which(samples_visited_already == sample_ids[n]) ]
 } else {
   tmp_cnt <- tmp_cnt + 1
   colors_per_columns[n] <- colors[tmp_cnt]
-  patients_visited_already[tmp_cnt] <- patient_ids[n]
+  samples_visited_already[tmp_cnt] <- sample_ids[n]
 }
-
-# if(colors_per_columns[n] != "unset") next
-# tmp_cnt <- tmp_cnt + 1
-# curr_col_name <- colnames(lengthPerExon)[n]
-# curr_type <- tissue_code[n]
-# patient <- strsplit(curr_col_name,"-")[[1]][3]
-# tmp_pair <- grep( patient, colnames(lengthPerExon) )
-# stopifnot(length(tmp_pair) == 2)
-# matching_sample_idx <- tmp_pair[tmp_pair != n]
-# colors_per_columns[n] <- colors[tmp_cnt]
-# colors_per_columns[matching_sample_idx] <- colors[tmp_cnt]
-# if(grepl("^01",curr_type)){
-# lty_per_columns[ matching_sample_idx ] <- 2
-# } else{
-# lty_per_columns[n] <- 2
-# }
 }
 
 if( "unset" %in% colors_per_columns) stop('missing color assingment to some samples')
 
 # convert colors to matrix of rgb values
 col_matrix <- col2rgb(colors_per_columns, alpha = TRUE) / 255
-# set alpha channel for all "primary tumor" samples to 0.1
-col_matrix[4, grep("01", tissue_code)] <- 0.1
 
 ################################################################################
 # create the CDF for every column and plot it
