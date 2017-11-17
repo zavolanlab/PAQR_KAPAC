@@ -761,7 +761,9 @@ def generate_cvg_vector(region, ex_id, to_extend_upstream, bam_file, unstranded)
                                                       strand)
                 # error handling
                 if process_res is None:
-                    return None
+                    cvg = HTSeq.GenomicArray( "auto", stranded=True, typecode='d' )
+                    cvg[ HTSeq.GenomicPosition(region.chrom, 1, region.strand) ] += 1
+                    return (ex_id, cvg, 0)
 
                 # delete previous alignments
                 same_read_list = []
@@ -795,7 +797,10 @@ def generate_cvg_vector(region, ex_id, to_extend_upstream, bam_file, unstranded)
 
             # error handling
             if process_res is None:
-                return None
+                # return a minimal coverage array
+                cvg = HTSeq.GenomicArray( "auto", stranded=True, typecode='d' )
+                cvg[ HTSeq.GenomicPosition(region.chrom, 1, region.strand) ] += 1
+                return (ex_id, cvg, 0)
 
         ########################
 
@@ -837,7 +842,9 @@ def generate_cvg_vector(region, ex_id, to_extend_upstream, bam_file, unstranded)
                     syserr("[INFO] splice-junction (%i) is downstream of proximal cleavage site start(%i)\n"
                            % (map_to_pos, to_extend_upstream))
                     syserr("[INFO] Suspect exon %s does not get assigned coverage\n" % ex_id)
-                    return (ex_id, HTSeq.GenomicArray( "auto", stranded=True, typecode='d' ), 0)
+                    cvg = HTSeq.GenomicArray( "auto", stranded=True, typecode='d' )
+                    cvg[ HTSeq.GenomicPosition(region.chrom, 1, region.strand) ] += 1
+                    return (ex_id, cvg, 0)
 
                 # move coordinate into last intron pos
                 if strand == "+":
