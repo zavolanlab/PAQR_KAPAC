@@ -441,7 +441,6 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
     # _________________________________________________________________________
     # -------------------------------------------------------------------------
     # fit the linear model to the current k-mer
-    ##results = fit_linear_model_for_one_motif(N=Ns[,kmer,drop=F], E=Es)
     results = fit_linear_model(N=Ns[,kmer,drop=F],E=Es,lambda=0.0)
     
     # calculate activity differences as well as the corresponding deltas and 
