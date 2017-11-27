@@ -2,7 +2,6 @@
 # -----------------------------------------------------------------------------
 # KAPAC (K-mer activity on poly(A) site choice)
 # -----------------------------------------------------------------------------
-# Author: Andreas J. Gruber 
 # Developed in R version: R version 3.3.1
 # -----------------------------------------------------------------------------
 rm(list=ls())
@@ -131,7 +130,6 @@ if (opt$treat_minus_ctrl == TRUE) {
 # FUNCTION: create_design_table
 # ARGUMENTS: sample_design_file_path
 # DESCRIPTION: Reads in the design table from a given path          
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 create_design_table <- function(sample_design_file_path)
 {
@@ -158,7 +156,6 @@ create_design_table <- function(sample_design_file_path)
 #              vectors, each of which contains a control and a treatment 
 #              sample name. The list names are created from the two sample
 #              names.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 create_contrast_pairs <- function(design_table)
 {
@@ -186,7 +183,6 @@ create_contrast_pairs <- function(design_table)
 #            col_name
 #            filename
 # DESCRIPTION: Write a dataframe or matrix including its rownames.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 write_incl_rownames <- function(data, col_name, filename, verbose=FALSE)
 {
@@ -230,7 +226,6 @@ write_incl_rownames <- function(data, col_name, filename, verbose=FALSE)
 #              one, then TGT is depleted for ALL the poly(A) sites, since we expect to 
 #              find a TGT all 4^3=64 nucleotides and we expect to find 1-2 TGTs per chance
 #              for each poly(A) site).
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 correct_by_sitecounts_expected_per_chance <- function(sitecount_matrix.raw_counts, 
                                                       considered_region_length,
@@ -279,7 +274,6 @@ correct_by_sitecounts_expected_per_chance <- function(sitecount_matrix.raw_count
 #              the rownames belong to specified in a column with the 
 #              colum nname specified by 'group_col'. The results can be
 #              scaled by the standard deviation if wanted ('scale_by_sd').
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 center_matrix_rows_by_groups <- function(matrix_to_center, 
                                          rowname_to_group_mappings,
@@ -314,7 +308,7 @@ center_matrix_rows_by_groups <- function(matrix_to_center,
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# FUNCTION: fit_linear_model
+# FUNCTION: fit_simple_linear_model_for_each_motif
 # ARGUMENTS: contrast_pairs
 #            treat_idx
 #            ctrl_idx
@@ -328,7 +322,6 @@ center_matrix_rows_by_groups <- function(matrix_to_center,
 #            randomize_data = FALSE
 #            verbose = FALSE
 # DESCRIPTION: fits a linear model to the given data
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
                                                    treat_idx,
@@ -448,7 +441,8 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
     # _________________________________________________________________________
     # -------------------------------------------------------------------------
     # fit the linear model to the current k-mer
-    results = fit_linear_model_for_one_motif(N=Ns[,kmer,drop=F], E=Es)
+    ##results = fit_linear_model_for_one_motif(N=Ns[,kmer,drop=F], E=Es)
+    results = fit_linear_model(N=Ns[,kmer,drop=F],E=Es,lambda=0.0)
     
     # calculate activity differences as well as the corresponding deltas and 
     # z-scores
@@ -556,7 +550,6 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
 #            polyA2exon_mapping
 #            exon_col
 # DESCRIPTION: creates the relative usage table
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 create_relative_usage_table <- function(expr_table,
                                         PAS_overlap_col,
@@ -604,7 +597,6 @@ create_relative_usage_table <- function(expr_table,
 #            pseudocount=1
 # DESCRIPTION: adds a pseudocount to a dataframe or matrix within the 
 #              columns that are not in 'cols_to_remove'.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 add_pseudocount <- function(expr_table,
                             cols_to_remove=NULL,
@@ -633,7 +625,6 @@ add_pseudocount <- function(expr_table,
 #              same exon as specified by the matrix 'polyA2exon_mapping', 
 #              which contains poly(A) site ids as rownames and associated
 #              exon ids in the 'exon_col' column.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 calculate_relative_usage  <- function(expr_table,
                                       cols_to_remove,
@@ -684,7 +675,6 @@ calculate_relative_usage  <- function(expr_table,
 #            pseudocount=1
 # DESCRIPTION: Get the log2 expression of theexpression table except the
 #              'cols_to_remove'. Add a pseudocount before going to log-space.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 get_log_expression <- function(expr_table,
                                cols_to_remove=NULL,
@@ -709,7 +699,6 @@ get_log_expression <- function(expr_table,
 #            pseudocount=1
 # DESCRIPTION: Get the log2 expression of theexpression table except the
 #              'cols_to_remove'. Add a pseudocount before going to log-space.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 keep_only_non_overlapping_multipas_exons  <- function(expr_table,
                                                       polyA2exon_mapping,
@@ -749,7 +738,6 @@ keep_only_non_overlapping_multipas_exons  <- function(expr_table,
 # FUNCTION: center.rows
 # ARGUMENTS: X
 # DESCRIPTION: Center the rows of a matrix X.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 center.rows <- function(X) 
 {
@@ -758,43 +746,84 @@ center.rows <- function(X)
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# FUNCTION: fit_linear_model_for_one_motif
+# FUNCTION: fast.svd
+# ARGUMENTS: M
+# DESCRIPTION: Perform an SVD (fast) on matrix M and return the result.
+# -----------------------------------------------------------------------------
+perform_svd_fast <- function(M) 
+{
+  if (nrow(M) > 2*ncol(M)) {
+    s = svd(crossprod(M)) 
+    s$d = sqrt(s$d)
+    s$u = M %*% sweep(s$v,2,s$d,FUN='/') 
+  } else if (ncol(M) > 2*nrow(M)) {
+    s = svd(tcrossprod(M)) 
+    s$d = sqrt(s$d)
+    s$v = sweep(crossprod(M,s$u),2,s$d,FUN='/') 
+  } else {
+    s = svd(M)
+  }
+  
+  return(s)
+}
+
+# _____________________________________________________________________________
+# -----------------------------------------------------------------------------
+# FUNCTION: fit_linear_model
 # ARGUMENTS: N
 #            E
-# DESCRIPTION: Fit a simple linear model ('lm(E~N-1)') and return a list
+#            lambda
+# DESCRIPTION: Fit a linear model and return a list
 #              containing a matrix with coefficients ('Ahat') 
 #              and errors ('AhatSE').
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
-fit_linear_model_for_one_motif <- function(N,E)
+fit_linear_model <- function(N,E,lambda)
 {
-  # fit a linear model without intercept (forced by the " - 1" in R), 
-  # since our data is centered around zero and we do want to explain our 
-  # data based on the slope (coefficient) only).
-  lm.result = lm(E~N-1)
-  lm.result.summary = summary(lm.result)
   
-  # create a list for the results
-  results = list()
+  # check whether the matrixes fit
+  if ( (!identical(rownames(N),rownames(E))) 
+       | (is.null(rownames(N))) 
+       | (is.null(rownames(E)))) {
+    stop('Rownames of N and E matrixes are not equal. Please ensure that the matrices match!')
+  }
   
-  # get the activities
-  results[["Ahat"]] = as.matrix(t(sapply( lm.result.summary, function(x) { coef(x)["N", "Estimate"] })))
-  rownames(results[["Ahat"]]) = colnames(N)[1]
-  colnames(results[["Ahat"]]) = sub("Response ", "", colnames(results[["Ahat"]]))
+  # do a SVD on matrix N
+  Ns = perform_svd_fast(N)
   
-  # get the errors
-  results[["AhatSE"]] = as.matrix(t(sapply( lm.result.summary, function(x) { coef(x)["N", "Std. Error"] })))
-  rownames(results[["AhatSE"]]) = colnames(N)[1]
-  colnames(results[["AhatSE"]]) = sub("Response ", "", colnames(results[["Ahat"]]))
+  # calculate the right hand side
+  rhs = crossprod(Ns$u,E)
+  
+  # calculate diagonal matrix
+  dia = Ns$d/(Ns$d^2 + nrow(N)*lambda)
+  
+  # calculate the activities
+  Ahat = sweep(Ns$v,2,dia,FUN='*') %*% rhs
+  dimnames(Ahat) = list(colnames(N),colnames(E)) 
+  
+  # calculate Chi2
+  Chi2 = colSums((E - N %*% Ahat)^2)
+  
+  # calculate matrix C
+  C = tcrossprod(sweep(Ns$v,2,1/(Ns$d^2 + nrow(N)*lambda),FUN='*'),Ns$v)
+  
+  # calculate the errors
+  AhatSE = sqrt(diag(C) %x% t(Chi2/nrow(E)))
+  colnames(AhatSE) = colnames(Ahat)
+  rownames(AhatSE) = rownames(Ahat)
   
   # calculate the z-scores
-  results[["Zscore"]] = results[["Ahat"]] / results[["AhatSE"]]
+  Zscore = Ahat/AhatSE
   
   # calculate the combined z-score
-  results[["combined.Zscore"]] = sqrt(rowMeans(results[["Zscore"]]^2))
+  combined.Zscore = sqrt(rowMeans(Zscore^2))
   
-  # return the result  
-  return(results)
+  # return the results in form of a list
+  fit = list(Ahat=Ahat,
+             Zscore=Zscore,
+             combined.Zscore=combined.Zscore,
+             AhatSE=AhatSE,
+             Chi2=Chi2)
+  return(fit)
 }
 
 # _____________________________________________________________________________
@@ -806,7 +835,6 @@ fit_linear_model_for_one_motif <- function(N,E)
 #            treat_idx
 #            ctrl_idx
 # DESCRIPTION: Calculate activity differences, errors and z-scores.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 calculate_activity_differences <- function(activities,
                                            deltas,
@@ -864,7 +892,6 @@ calculate_activity_differences <- function(activities,
 # ARGUMENTS: activity_ctrl
 #            activity_treat
 # DESCRIPTION: Calculate the activity difference of two given activities.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 calculate_activity_difference <- function(activity_ctrl,
                                           activity_treat)
@@ -879,7 +906,6 @@ calculate_activity_difference <- function(activity_ctrl,
 # ARGUMENTS: delta_ctrl
 #            delta_treat
 # DESCRIPTION: Calculate the delta difference of two given deltas.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 calculate_delta_difference <- function(delta_ctrl,
                                        delta_treat)
@@ -894,7 +920,6 @@ calculate_delta_difference <- function(delta_ctrl,
 # ARGUMENTS: coefficient
 #            error
 # DESCRIPTION: Calculate a z-value for a given coefficient and error.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 calcultate_zvalue <- function(coefficient,
                               error)
@@ -926,7 +951,6 @@ calcultate_zvalue <- function(coefficient,
 #            dot_type=19
 #            additional_code_to_be_executed=NULL
 # DESCRIPTION: Create a plot for multiple motifs.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 activity_profile_plots <- function(motifs,
                                    activities.mat,
@@ -1000,7 +1024,6 @@ activity_profile_plots <- function(motifs,
 #            dot_type=1
 #            additional_code_to_be_executed=NULL
 # DESCRIPTION: Create a motif activity profile plot.
-# AUTHOR: Andreas J. Gruber
 # -----------------------------------------------------------------------------
 activity_profile_plot <- function(motifs_to_plot.vec,
                                   activities.mat,
