@@ -417,8 +417,7 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
   kmers = colnames(Ns)
   
   # create a matrix for the final results
-  result_cols = c('z_score', 
-                  'mean_diff_zscores', 
+  result_cols = c('mean_diff_zscores', 
                   'mean_diff_activity', 
                   'mean_diff_delta')
   results.single_kmer_per_run =
@@ -455,9 +454,6 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
     # -------------------------------------------------------------------------   
     # Store the results
     # -------------------------------------------------------------------------   
-    # combined z-score (over all samples, contrast independent)
-    results.single_kmer_per_run[kmer,'z_score'] = results$combined.Zscore
-    
     # contrast dependent results
     results.single_kmer_per_run[kmer,'mean_diff_zscores'] = 
       diff_results$activity_difference_zscores[kmer,'mean_diff_zscore']
@@ -481,13 +477,6 @@ fit_simple_linear_model_for_each_motif <- function(contrast_pairs,
       # Create FILES, if wanted
       if (create_files_for_each_motif)
       {
-        # write out the zscores
-        write_incl_rownames(data = results[["combined.Zscore"]],
-                            col_name = 'motif', 
-                            filename = paste(path_kmer_results_dir, 
-                                             'combined_zscore', 
-                                             sep='/'))
-        
         # write out the activities
         write_incl_rownames(data = t(results[["Ahat"]]),
                             col_name = 'sample_id', 
@@ -745,20 +734,25 @@ center.rows <- function(X)
 
 # _____________________________________________________________________________
 # -----------------------------------------------------------------------------
-# FUNCTION: fast.svd
+# FUNCTION: perform_svd_fast
 # ARGUMENTS: M
 # DESCRIPTION: Perform an SVD (fast) on matrix M and return the result.
+# SOURCE: Adapted from the R 'corpcor' package.
+#         The package is developed by the Strimmer Lab 
+#         (http://strimmerlab.org/software/corpcor/) and 
+#         distributed under the GNU General Public License. It is 
+#         available at the CRAN archive (https://cran.r-project.org).
 # -----------------------------------------------------------------------------
 perform_svd_fast <- function(M) 
 {
   if (nrow(M) > 2*ncol(M)) {
     s = svd(crossprod(M)) 
     s$d = sqrt(s$d)
-    s$u = M %*% sweep(s$v,2,s$d,FUN='/') 
+    s$u = M %*% sweep(s$v,2,s$d,FUN='/')
   } else if (ncol(M) > 2*nrow(M)) {
     s = svd(tcrossprod(M)) 
     s$d = sqrt(s$d)
-    s$v = sweep(crossprod(M,s$u),2,s$d,FUN='/') 
+    s$v = sweep(crossprod(M,s$u),2,s$d,FUN='/')
   } else {
     s = svd(M)
   }
@@ -797,31 +791,21 @@ fit_linear_model <- function(N,E,lambda)
   
   # calculate the activities
   Ahat = sweep(Ns$v,2,dia,FUN='*') %*% rhs
-  dimnames(Ahat) = list(colnames(N),colnames(E)) 
-  
-  # calculate Chi2
-  Chi2 = colSums((E - N %*% Ahat)^2)
-  
-  # calculate matrix C
-  C = tcrossprod(sweep(Ns$v,2,1/(Ns$d^2 + nrow(N)*lambda),FUN='*'),Ns$v)
+  dimnames(Ahat) = list(colnames(N), colnames(E))
   
   # calculate the errors
-  AhatSE = sqrt(diag(C) %x% t(Chi2/nrow(E)))
+  C = tcrossprod(sweep(Ns$v, 2, 1 / (Ns$d^2 + nrow(N)*lambda), FUN='*'), Ns$v)
+  AhatSE = sqrt( diag(C) %x% t( colSums((E-N %*% Ahat)^2) / nrow(E)) )
   colnames(AhatSE) = colnames(Ahat)
   rownames(AhatSE) = rownames(Ahat)
   
   # calculate the z-scores
-  Zscore = Ahat/AhatSE
-  
-  # calculate the combined z-score
-  combined.Zscore = sqrt(rowMeans(Zscore^2))
+  Zscore = Ahat / AhatSE
   
   # return the results in form of a list
   fit = list(Ahat=Ahat,
              Zscore=Zscore,
-             combined.Zscore=combined.Zscore,
-             AhatSE=AhatSE,
-             Chi2=Chi2)
+             AhatSE=AhatSE)
   return(fit)
 }
 
@@ -1663,16 +1647,8 @@ if (opt$verbose) {
 #       path_kmer_results_dir = paste(opt$results_dir, kmer, sep="/")
 #       dir.create(path_kmer_results_dir, showWarnings=FALSE, recursive=TRUE)
 #       
-#       # prepare a matrix containing the z-scores (sorted)
-#       overall_z_scores = as.matrix(c(0.0),nrow=1, ncol=1)
-#       rownames(overall_z_scores) = kmer
-#       colnames(overall_z_scores) = 'z_score'
-#       
 #       # -----------------------------------------------------------------------------
 #       # write out the zscores
-#       write_incl_rownames(data=overall_z_scores,
-#                           col_name='pwm', 
-#                           filename=paste(path_kmer_results_dir, '/zscore', sep=''))
 #       
 #       # write out the activities
 #       write_incl_rownames(data=kmer_matrix,

@@ -12,6 +12,7 @@ PAQR/.snakemake/
 PAQR/scripts/deNovo-used-sites-and-usage-inference.testVersion.py
 KAPAC/doIt.sh
 KAPAC/RESULTS/
+KAPAC/RESULTS_FORMER/
 KAPAC/RESULTS.log
 KAPAC/DATA/kmer_counts_all.tsv
 # exclude the gitignore as well
