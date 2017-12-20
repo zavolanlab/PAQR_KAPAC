@@ -83,6 +83,7 @@ rule infer_relative_usage:
     output:
         relUse = "{study}/relative_usages.tsv",
 	expressions = "{study}/tandem_pas_expressions.tsv",
+        distal_sites = "{study}/single_distal_sites.tsv"
         header = "{study}/relative_usages.header.out"
     params:
         script_dir = config['dir.scripts'],
@@ -115,9 +116,8 @@ rule infer_relative_usage:
         conds_string = " ".join(conds)
         extens_string = " ".join(extens)
         shell('''
-        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/deNovo-used-sites-and-usage-inference.py \
+        {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/deNovo-used-sites-and-usage-inference.single_distal_included.py \
         --verbose \
-	--expressions_out {output.expressions} \
         --clusters {params.clusters} \
         --coverages {input.coverages} \
         --conditions {conds_string} \
@@ -131,10 +131,11 @@ rule infer_relative_usage:
         --best_break_point_upstream_extension {params.valid_region_upstream_of_cluster_to_locate_globalBestBreakPoint_in} \
         --processors {threads} \
         --max_downstream_coverage {params.max_downstream_cov_relative_to_start} \
+        --expressions_out {output.expressions} \
+        --distal_sites {output.distal_sites} \
         > {output.relUse} \
         2> {log}
         ''')
-
 
 #-------------------------------------------------------------------------------
 # create design file for polyA-MARA
@@ -172,7 +173,8 @@ rule design_file:
 rule tpm_normalize:
     ##LOCAL##
     input:
-        expression = "{study}/tandem_pas_expressions.tsv"
+        expression = "{study}/tandem_pas_expressions.tsv",
+        distal_sites = "{study}/single_distal_sites.tsv"
     output:
         tpm_expr = "{study}/tandem_pas_expressions.rpm.tsv"
     run:
@@ -183,6 +185,13 @@ rule tpm_normalize:
                 if len(libsizes) == 0:
                     for i in range(10, len(F)):
                         libsizes.append(0)
+                for i in range(10, len(F)):
+                    if float(F[i]) == -1:
+                        continue
+                    libsizes[ i - 10 ] += float(F[i])
+
+        with open(input.distal_sites, "r") as distal_in:
+            for line in distal_in:
                 for i in range(10, len(F)):
                     if float(F[i]) == -1:
                         continue
