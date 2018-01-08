@@ -1,5 +1,8 @@
 
 '''-------------------------------------------------------------------------------------------------
+This is an adapted version of the original script tin.py
+Auxiliary information is left in its original state.
+
 This program calculates transcript integrity number (TIN) for each transcript (or gene) in
 BED file. TIN is conceptually similar to RIN (RNA integrity number) but provides transcript
 level measurement of RNA quality and is more sensitive to measure low quality RNA samples:
