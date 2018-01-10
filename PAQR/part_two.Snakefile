@@ -22,7 +22,6 @@ rule all:
     '''
     input:
         cdf_plots = expand( "{study}/weighted_avg_exonLength.CDFs.pdf", study = config['studies']),
-        order_of_samples = expand( "{study}/INFO.tsv", study = config['studies']),
         expressions = expand( "{study}/tandem_pas_expressions.rpm.filtered.tsv", study = config['studies'])
     run:
         # check if cluster_logs dir for first sample is empty
@@ -83,7 +82,7 @@ rule infer_relative_usage:
     output:
         relUse = "{study}/relative_usages.tsv",
 	expressions = "{study}/tandem_pas_expressions.tsv",
-        distal_sites = "{study}/single_distal_sites.tsv"
+        distal_sites = "{study}/single_distal_sites.tsv",
         header = "{study}/relative_usages.header.out"
     params:
         script_dir = config['dir.scripts'],
@@ -108,13 +107,17 @@ rule infer_relative_usage:
     run:
         conds = []
         extens = []
+        names = []
         with open( output.header, "w" ) as header_out:
             for cvg in input.coverages:
                 conds.append( config[ cvg.split("/")[-1].split(".")[0] ]['type'] )
                 extens.append( cvg.replace("pkl", "extensions.tsv") )
-                header_out.write("%s\n" % cvg.split("/")[-1].split(".")[0])
+                curr_name = cvg.split("/")[-1].split(".")[0]
+                names.append(curr_name)
+                header_out.write("%s\n" % curr_name)
         conds_string = " ".join(conds)
         extens_string = " ".join(extens)
+        names_string = " ".join(names)
         shell('''
         {params.py2_env_path}/py2_paqr/bin/python {params.script_dir}/deNovo-used-sites-and-usage-inference.single_distal_included.py \
         --verbose \
@@ -122,6 +125,7 @@ rule infer_relative_usage:
         --coverages {input.coverages} \
         --conditions {conds_string} \
 	--ex_extension_files {extens_string} \
+        --names {names_string} \
         --read_length {params.read_len} \
         --min_coverage_region {params.min_region_length_to_infer_meanCov} \
         --min_mean_coverage {params.rawCounts_minMeanCoverage_per_sample} \
@@ -138,36 +142,6 @@ rule infer_relative_usage:
         ''')
 
 #-------------------------------------------------------------------------------
-# create design file for polyA-MARA
-#-------------------------------------------------------------------------------
-rule design_file:
-    ##LOCAL##
-    input:
-        header = "{study}/relative_usages.header.out"
-    output:
-        "{study}/INFO.tsv"
-    run:
-        with open (output[0], "w") as outfile:
-            outfile.write("sample_id\tcell_type\ttreatment\treplicate\tgroup\tcontrast\n")
-            study_abbr = "{study}"
-            for i in  [line.rstrip() for line in open( input.header, "r").readlines() ] :
-                if 'control' not in config[i]:
-                    outfile.write("%s\t%s\t%s\tmRNAseq\tCNTRL\tCNTRL\n"
-                          % (i,
-                             study_abbr,
-                             "control"
-                          )
-                    )
-                else:
-                    outfile.write("%s\t%s\t%s\tmRNAseq\tKD\t%s\n"
-                          % (i,
-                             study_abbr,
-                             "kd",
-                             config[i]['control']
-                             )
-                    )
-
-#-------------------------------------------------------------------------------
 # tpm normalize the expression values by the number of mapped reads
 #-------------------------------------------------------------------------------
 rule tpm_normalize:
@@ -181,6 +155,8 @@ rule tpm_normalize:
         libsizes = []
         with open(input.expression, "r") as ifile:
             for line in ifile:
+                if line.startswith("chrom"):
+                    continue
                 F = line.rstrip().split("\t")
                 if len(libsizes) == 0:
                     for i in range(10, len(F)):
@@ -192,6 +168,8 @@ rule tpm_normalize:
 
         with open(input.distal_sites, "r") as distal_in:
             for line in distal_in:
+                if line.startswith("chrom"):
+                    continue
                 for i in range(10, len(F)):
                     if float(F[i]) == -1:
                         continue
@@ -200,6 +178,9 @@ rule tpm_normalize:
         with open(output.tpm_expr, "w") as ofile:
             with open(input.expression, "r") as ifile:
                 for line in ifile:
+                    if line.startswith("chrom"):
+                        ofile.write("%s" % line)
+                        continue
                     F = line.rstrip().split("\t")
                     for i in range(10, len(F)):
                         if float(F[i]) == -1:
@@ -249,8 +230,12 @@ rule get_filtered_rel_usages:
 
         # same for expression table
         exons = {}
+        header = ''
         with open(input.expressions, "r") as expr_in:
             for line in expr_in:
+                if line.startswith("chrom"):
+                    header = line
+                    continue
                 selected_entries = []
                 F = line.rstrip().split("\t")
                 if F[8] not in exons:
@@ -269,6 +254,7 @@ rule get_filtered_rel_usages:
                     exons[ F[8] ].append( None )
 
         with open(output.expressions_filtered, "w") as out_table_expr:
+            out_table_expr.write("%s" % header)
             for ex in exons:
                 if None in exons[ex]:
                     continue

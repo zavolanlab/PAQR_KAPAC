@@ -141,6 +141,11 @@ parser.add_argument("--distal_sites",
                     dest="distal_sites",
                     help="file name to which the exons are written that have only distal site usage\n")
 
+parser.add_argument("--names",
+                    dest="sample_names",
+                    nargs="*",
+                    help="names of the samples")
+
 #parser.add_argument("--min_r_squared", 
 #                    dest="r_sq",
 #                    type=float,
@@ -2114,6 +2119,33 @@ def main(options):
 
     with open(expression_output_file_name, "w") as ofile:
         with open( distal_sites_output_file_name, "w") as distal_out:
+
+            # print header lines for the distal site and the expression file
+            distal_out.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+                "chrom",
+                "start",
+                "end",
+                "pas",
+                "score",
+                "strand",
+                "polyAsite_exon_idx",
+                "nr_polyAsites_on_exon",
+                "exon",
+                "gene",
+                "\t".join(options.sample_names) ) )
+
+            ofile.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+                "chrom",
+                "start",
+                "end",
+                "pas",
+                "score",
+                "strand",
+                "polyAsite_exon_idx",
+                "nr_polyAsites_on_exon",
+                "exon",
+                "gene",
+                "\t".join(options.sample_names) ) )
 
             for res_tu in result_tuples:
                 exon = res_tu[0]
