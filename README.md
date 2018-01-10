@@ -1,6 +1,7 @@
 # Use PAQR and KAPAC
 
 This repository provides all necessary information and scripts required to use the methods PAQR and/or KAPAC.
+Further down you find the link to a self-contained pipeline that runs both tools in combination.
 
 
 To get you started, clone the repository and change to the directory you specified as target-directory:
