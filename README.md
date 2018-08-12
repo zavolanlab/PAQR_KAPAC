@@ -6,7 +6,7 @@ Further down you find the link to a self-contained pipeline that runs both tools
 
 To get you started, clone the repository and change to the directory you specified as target-directory:
 ```bash
-git clone ssh://git@git.scicore.unibas.ch:2222/zavolan_public/PAQR_KAPAC.git path/to/workdir
+git clone https://github.com/zavolanlab/PAQR_KAPAC.git path/to/workdir
 cd path/to/workdir
 ```
 
@@ -38,7 +38,7 @@ If you already have a conda version with python2 installed, create the new pytho
 With the installation of the environment, the following software is installed as well:
 - [Python](https://www.python.org/) (v3.5.1)
 - [Snakemake](https://snakemake.readthedocs.io/en/stable/) (v3.13.0)
-- [NumPy] (http://www.numpy.org/) (v1.11.3)
+- [NumPy](http://www.numpy.org/) (v1.11.3)
 - [Graphviz](http://www.graphviz.org/) (v2.38.0)
 - [PyYaml](http://pyyaml.org/) (v3.12)
 - [Docutils](http://docutils.sourceforge.net/) (v0.12)
@@ -47,7 +47,7 @@ With the installation of the environment, the following software is installed as
 - [bedtools](http://bedtools.readthedocs.io/en/latest/) (v2.26.0)
 - [gzip](http://www.gzip.org/) (v1.7)
 - [R](https://www.r-project.org/)
-- [SRA tools](https://github.com/ncbi/sra-tools) (v.
+- [SRA tools](https://github.com/ncbi/sra-tools) (v.2.8.2)
 
 #### Step 3: Creating a new python2 environment to run PAQR
 PAQR relies on packages that are available only for python2 currently. To ensure that PAQR runs properly, this python2 environment is installed.
