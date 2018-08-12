@@ -46,7 +46,7 @@ With the installation of the environment, the following software is installed as
 - [samtools](http://www.htslib.org/) (v1.3.1)
 - [bedtools](http://bedtools.readthedocs.io/en/latest/) (v2.26.0)
 - [gzip](http://www.gzip.org/) (v1.7)
-- [R](https://www.r-project.org/)
+- [R](https://www.r-project.org/) (v3.3.2)
 - [SRA tools](https://github.com/ncbi/sra-tools) (v.2.8.2)
 
 #### Step 3: Creating a new python2 environment to run PAQR
