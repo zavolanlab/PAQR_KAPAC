@@ -3,3 +3,4 @@
 python=2.7.11
 htseq=0.7.2
 rseqc=2.6.4
+pymongo=3.4.0

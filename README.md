@@ -52,12 +52,12 @@ With the installation of the environment, the following software is installed as
 #### Step 3: Creating a new python2 environment to run PAQR
 PAQR relies on packages that are available only for python2 currently. To ensure that PAQR runs properly, this python2 environment is installed.
   ```bash
-  conda create -n py2_paqr python=2 -c bioconda --file requirements_py2.txt
+  conda create -n py2_paqr python=2 -c bioconda -c anaconda --file requirements_py2.txt
   ```
 
 The following python packages are available in this python2 environment:
-- [HTSeq] (https://htseq.readthedocs.io/en/release_0.9.1/index.html) (v0.7.2)
-- [RseQC] (http://rseqc.sourceforge.net) (2.6.4)
+- [HTSeq](https://htseq.readthedocs.io/en/release_0.9.1/index.html) (v0.7.2)
+- [RseQC](http://rseqc.sourceforge.net) (v2.6.4)
 
 #### Step 4: Activate the environment
 (only the python3 environment needs to be activated; the py2_paqr environment is only used internally)
