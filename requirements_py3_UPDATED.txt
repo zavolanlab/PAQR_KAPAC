@@ -1,0 +1,11 @@
+# This file may be used to create an environment using:
+# $ conda create --name tutorial --file <this file>
+python=3.5.4
+snakemake=3.13.0
+graphviz=2.38.0
+star=2.5.2a
+samtools=1.3.1
+bedtools=2.26.0
+gzip=1.7
+r-base=3.5.1
+sra-tools=2.8.2

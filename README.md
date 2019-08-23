@@ -30,6 +30,21 @@ On MacOS X:
   ```bash
   conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3.txt
   ```
+**Important Update**: Please not that we experienced some difficulties with some anaconda-packages which have been removed from anaconda cloud. In order to create the python3 environment please follow these steps:
+  ```bash
+  conda create -n paqr_kapac -c bioconda -c ostrokach -c r -c defaults --file requirements_py3_UPDATED.txt
+  ```
+This will result in an environment without the R package "optparse". In order to install this package please run:
+  ```bash
+  conda activate paqr_kapac
+  R
+  ```
+Now, you should find your console to be in an active R session. Here, execute:
+  ```R
+  install.packages("optparse")
+  q()
+  ```
+  
 If you already have a conda version with python2 installed, create the new python 3 environment like this:
   ```bash
   conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3.txt python=3
