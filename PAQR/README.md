@@ -35,7 +35,81 @@ on MaxOS X:
   open -e config.yaml
   ```
 
-Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaing.
+Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaning. If you need to change # Run the PAQR pipeline
+
+PAQR is a tool that allows the quantification of transcript 3' ends (or poly(A) sites) based on standard RNA-seq data. As input it requires alignment files in BAM format and it returns a table of quantified tandem poly(A) sites (i.e. poly(A) sites that belong to the same gene and change the length of the 3' UTR).
+
+The method is actually a combination of scripts that depend on each other. To ease the execution of the scripts they have been assembled into a pipeline. The use PAQR, you simply have to run the pipeline. 
+
+## Requirements
+For normal samples (e.g. the samples that are used as test cases here) the pipeline will run on a laptop or stationary working machine with at least 10 GB of memory (RAM). Be aware though that the memory consumptions depends on the sequencing depth of your samples (i.e. how large your input files are). In rare cases, we found a peak memory usage of around 50 GB for very deeply sequenced samples (more than 400 million reads). [Snakemake](https://snakemake.readthedocs.io/en/stable/) is used to facilitate the automated execution of all analysis steps. The easiest way to make use of the pipeline is to set up a python3 and a python2 virtual environment and run the pipeline in the python3 environment. Instructions on how to install the virtual environments for the analysis are given in the README of the main directory of this repository.
+
+### snakemake
+[Snakemake](https://snakemake.readthedocs.io/en/stable/) is a workflow management system that helps to create and execute data processing pipelines. It is already part of the virtual environment which was introduced in the introduction README.
+
+### activate the python 3 environment
+Please see the README file one level up. There you can find information how to install miniconda and how to create a python3 environment that is used now to run the pipeline.
+
+Activate the environment:
+  ```bash
+  source activate paqr_kapac
+  ```
+
+### Configure the input parameters
+The PAQR subdirectory (you should be in this directory while you go through this README) contains a file called "config.yaml". This files contains all information about used parameter values, data locations, file names and so on. During a run, all steps of the pipeline will retrieve their paramter values from this file. It follows the yaml syntax (find more information about yaml and it's syntax [here](http://www.yaml.org/)) what makes it easy to read and edit. The main principles are:
+  - everything that comes after a `#` symbol is considered as comment and will not be interpreted
+  - paramters are given as key-value pair, with `key` being the name and `value` the value of any paramter
+
+Before starting a run of the pipeline, open "config.yaml" in a text editor of your choice, e.g.
+on Linux:
+  ```bash
+  gedit config.yaml
+  ```
+
+on MaxOS X:
+
+  ```bash
+  open -e config.yaml
+  ```
+
+Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaning. If you need to change # Run the PAQR pipeline
+
+PAQR is a tool that allows the quantification of transcript 3' ends (or poly(A) sites) based on standard RNA-seq data. As input it requires alignment files in BAM format and it returns a table of quantified tandem poly(A) sites (i.e. poly(A) sites that belong to the same gene and change the length of the 3' UTR).
+
+The method is actually a combination of scripts that depend on each other. To ease the execution of the scripts they have been assembled into a pipeline. The use PAQR, you simply have to run the pipeline. 
+
+## Requirements
+For normal samples (e.g. the samples that are used as test cases here) the pipeline will run on a laptop or stationary working machine with at least 10 GB of memory (RAM). Be aware though that the memory consumptions depends on the sequencing depth of your samples (i.e. how large your input files are). In rare cases, we found a peak memory usage of around 50 GB for very deeply sequenced samples (more than 400 million reads). [Snakemake](https://snakemake.readthedocs.io/en/stable/) is used to facilitate the automated execution of all analysis steps. The easiest way to make use of the pipeline is to set up a python3 and a python2 virtual environment and run the pipeline in the python3 environment. Instructions on how to install the virtual environments for the analysis are given in the README of the main directory of this repository.
+
+### snakemake
+[Snakemake](https://snakemake.readthedocs.io/en/stable/) is a workflow management system that helps to create and execute data processing pipelines. It is already part of the virtual environment which was introduced in the introduction README.
+
+### activate the python 3 environment
+Please see the README file one level up. There you can find information how to install miniconda and how to create a python3 environment that is used now to run the pipeline.
+
+Activate the environment:
+  ```bash
+  source activate paqr_kapac
+  ```
+
+### Configure the input parameters
+The PAQR subdirectory (you should be in this directory while you go through this README) contains a file called "config.yaml". This files contains all information about used parameter values, data locations, file names and so on. During a run, all steps of the pipeline will retrieve their paramter values from this file. It follows the yaml syntax (find more information about yaml and it's syntax [here](http://www.yaml.org/)) what makes it easy to read and edit. The main principles are:
+  - everything that comes after a `#` symbol is considered as comment and will not be interpreted
+  - paramters are given as key-value pair, with `key` being the name and `value` the value of any paramter
+
+Before starting a run of the pipeline, open "config.yaml" in a text editor of your choice, e.g.
+on Linux:
+  ```bash
+  gedit config.yaml
+  ```
+
+on MaxOS X:
+
+  ```bash
+  open -e config.yaml
+  ```
+
+Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaning. If you need to change path names please ensure to **use relative instead of absolute path names**.
 
 The first value you have to change is "py2_env_path" and the value should be set to the path where you installed your python2 environment before. Since you're in the activated python3 environment at this moment, it is easy to figure out the path. Just type
   ```bash
