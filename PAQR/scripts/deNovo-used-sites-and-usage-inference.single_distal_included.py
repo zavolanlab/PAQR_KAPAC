@@ -1646,36 +1646,39 @@ def get_relative_usages(used_sites,
         cvg_counter = -1
         for cvg in bp_coverages_dict[cond]:
             cvg_counter += 1
-            
-        if strand == "+":
-            start_idx = region.index( exon_structure[2] )
-            if used_sites[0][1].start - read_length - min_coverage_region < exon_structure[2]:
-                start_idx = region.index( exon_structure[2] - add_us_extension[cond][cvg_counter] )
+
+            if strand == "+":
+                start_idx = region.index( exon_structure[2] )
+                if used_sites[0][1].start - read_length - min_coverage_region < exon_structure[2]:
+                    start_idx = region.index( exon_structure[2] - add_us_extension[cond][cvg_counter] )
                 try:
                     end_idx = region.index( used_sites[0][1].start - read_length )
                 except ValueError:
                     end_idx = region.index( exon_structure[2] - add_us_extension[cond][cvg_counter] + 1)
-            if end_idx - start_idx < min_coverage_region:
-                syserr(("[INFO] Distance from proximal site to exon start of exon %s cond %s sample #%i " +
-                        "is very small despite upstream extension (%i nt). For relative usage inference, " +
-                        "the read length is not excluded from the upstream region of the proximal site\n")
-                       % (exon_id, cond, cvg_counter, add_us_extension[cond][cvg_counter]))
-                end_idx = region.index( used_sites[0][1].start )
-        else:
-            if used_sites[0][1].end  + read_length + min_coverage_region > exon_structure[3]:
-                    end_idx = region.index( exon_structure[3] + add_us_extension[cond][cvg_counter] - 1) + 1
+
+                if end_idx - start_idx < min_coverage_region:
+                    syserr(("[INFO] Distance from proximal site to exon start of exon %s cond %s sample #%i " +
+                            "is very small despite upstream extension (%i nt). For relative usage inference, " +
+                            "the read length is not excluded from the upstream region of the proximal site\n")
+                           % (exon_id, cond, cvg_counter, add_us_extension[cond][cvg_counter]))
+                    end_idx = region.index( used_sites[0][1].start )
             else:
-                end_idx = region.index( exon_structure[3] - 1) + 1
+                if used_sites[0][1].end  + read_length + min_coverage_region > exon_structure[3]:
+                    end_idx = region.index( exon_structure[3] + add_us_extension[cond][cvg_counter] - 1) + 1
+                else:
+                    end_idx = region.index( exon_structure[3] - 1) + 1
+
                 try:
                     start_idx = region.index( used_sites[0][1].end  + read_length)
                 except ValueError:
                     start_idx = end_idx = region.index( exon_structure[3] + add_us_extension[cond][cvg_counter] - 2) + 1
-            if end_idx - start_idx < min_coverage_region:
-                syserr(("[INFO] Distance from proximal site to exon start of exon %s cond %s sample #%i " +
-                        "is very small despite upstream extension (%i nt). For relative usage inference, " +
-                        "the read length is not excluded from the upstream region of the proximal site\n")
-                       % (exon_id, cond, cvg_counter, add_us_extension[cond][cvg_counter]))
-                start_idx = region.index( used_sites[0][1].end )
+
+                if end_idx - start_idx < min_coverage_region:
+                    syserr(("[INFO] Distance from proximal site to exon start of exon %s cond %s sample #%i " +
+                            "is very small despite upstream extension (%i nt). For relative usage inference, " +
+                            "the read length is not excluded from the upstream region of the proximal site\n")
+                           % (exon_id, cond, cvg_counter, add_us_extension[cond][cvg_counter]))
+                    start_idx = region.index( used_sites[0][1].end )
        
             region_means[cond].append([])
             relative_usages[cond].append([])
