@@ -35,7 +35,7 @@ on MaxOS X:
   open -e config.yaml
   ```
 
-Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaing.
+Some entries require your editing while most of them you can leave unchanged. However, this config file contains all parameters used in the pipeline and the comments should give you the information about their meaning. If you need to change path names please ensure to **use relative instead of absolute path names**.
 
 The first value you have to change is "py2_env_path" and the value should be set to the path where you installed your python2 environment before. Since you're in the activated python3 environment at this moment, it is easy to figure out the path. Just type
   ```bash
