@@ -1173,7 +1173,7 @@ if __name__ == '__main__':
             if not os.path.isdir(pkl_path):
                 # create the directory
                 # (do not handle a potential OSError)
-                os.makedirs(options.pkl_path)
+                os.makedirs(pkl_path)
                 syserr("[INFO] Output directory for pickle objects created\n")
         main(options)
         if options.verbose:
