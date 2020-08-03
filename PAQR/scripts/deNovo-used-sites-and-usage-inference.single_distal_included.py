@@ -830,8 +830,8 @@ def find_sites_with_usage(sites,
             # process a set of closely spaced clusters
             best_candidate_ratio = 1
             best_candidate_prot_support = 0
-            best_candidate_up_mse_values = []
-            best_candidate_ds_mse_values = []
+            best_candidate_up_mse_dict = {}
+            best_candidate_ds_mse_dict = {}
             best_candidate_site = None
             best_candidate_valid_conditions = []
             best_candidate_supporting_cvgs = {}
@@ -1256,9 +1256,9 @@ def get_pA_set(exon_id,
                                                                     add_us_ext)
         
         
-        # return distal site together with the valid_mean_cvg_dict!
+        # return distal site together with the valid_break_point_dict!
         # NOT the valid_mean_cvg_dict!
-        return (polyA_sites, valid_mean_cvg_dict)
+        return (polyA_sites, valid_break_point_dict)
 
     ######
     # fourth part
