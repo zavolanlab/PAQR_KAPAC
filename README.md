@@ -27,9 +27,6 @@ On MacOS X:
   ```
 
 #### Step 2: Creating a new python3 environment (with all required packages/software)
-  ```bash
-  conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3.txt
-  ```
 **Important Update**: Please not that we experienced some difficulties with some anaconda-packages which have been removed from anaconda cloud. In order to create the python3 environment please follow these steps:
   ```bash
   conda create -n paqr_kapac -c bioconda -c ostrokach -c r -c defaults --file requirements_py3_UPDATED.txt
@@ -47,8 +44,11 @@ Now, you should find your console to be in an active R session. Here, execute:
   
 If you already have a conda version with python2 installed, create the new python 3 environment like this:
   ```bash
-  conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3.txt python=3
+  conda create -n paqr_kapac -c bioconda -c ostrokach --file requirements_py3_UPDATED.txt python=3
   ```
+And follow the steps above to also install the required R package.
+
+The original file `requirements_py3.txt` is deprecated.
 
 With the installation of the environment, the following software is installed as well:
 - [Python](https://www.python.org/) (v3.5.1)
@@ -65,10 +65,12 @@ With the installation of the environment, the following software is installed as
 - [SRA tools](https://github.com/ncbi/sra-tools) (v.2.8.2)
 
 #### Step 3: Creating a new python2 environment to run PAQR
-PAQR relies on packages that are available only for python2 currently. To ensure that PAQR runs properly, this python2 environment is installed.
+PAQR relies on packages that were available only for python2 at the time of implementation. To ensure that PAQR runs properly, this python2 environment is installed.
+**Important Update**: Please not that due to changes in the anaconda default channels, the packages listed in the `requirements_py2.txt` are not available by default anymore. Therefore, an updated version of the file is now used to create the environment as follows:
   ```bash
-  conda create -n py2_paqr python=2 -c bioconda -c anaconda --file requirements_py2.txt
+  conda create -n py2_paqr python=2 -c bioconda -c anaconda --file requirements_py2_UPDATED.txt
   ```
+The original file `requirements_py2.txt` is deprecated.
 
 The following python packages are available in this python2 environment:
 - [HTSeq](https://htseq.readthedocs.io/en/release_0.9.1/index.html) (v0.7.2)
