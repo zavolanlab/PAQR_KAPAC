@@ -1,0 +1,67 @@
+{
+
+    "__default__":
+    {
+        "queue": "6hours",
+        "time": "06:00:00",
+        "threads": "1",
+        "mem": "20G"
+    },
+
+    "PAQ_create_coverages":
+    {
+        "queue": "6hours",
+        "time": "06:00:00",
+        "threads": "8",
+        "mem": "20G"
+    },
+
+    "PAQ_infer_relative_usage":
+    {
+        "queue": "6hours",
+        "time": "06:00:00",
+        "threads": "8",
+        "mem": "20G"
+    },
+
+    "PAQ_filter_and_merge_PAQR_tables":
+    {
+        "queue": "30min",
+        "time": "00:05:00",
+        "threads": "1",
+        "mem": "5G"
+    },
+
+    "PAQ_combine_pas_tables":
+    {
+        "queue": "30min",
+        "time": "00:05:00",
+        "threads": "1",
+        "mem": "5G"
+    },
+
+    "PAQ_relative_pas_positions":
+    {
+        "queue": "30min",
+        "time": "00:05:00",
+        "threads": "1",
+        "mem": "5G"
+    },
+
+    "PAQ_normalize_expression":
+    {
+        "queue": "30min",
+        "time": "00:05:00",
+        "threads": "1",
+        "mem": "5G"
+    },
+
+    "PAQ_filter_on_expression":
+    {
+        "queue": "30min",
+        "time": "00:05:00",
+        "threads": "1",
+        "mem": "5G"
+    }
+
+}
