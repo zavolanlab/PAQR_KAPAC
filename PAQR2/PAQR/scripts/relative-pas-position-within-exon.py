@@ -48,7 +48,7 @@ def main(options):
         # sort by pas coordinate
         pas = sorted(pasPerExon[exon])
         # reverse order if the exon is on the negative strand
-        pas = pas[::-1] if pas[0].split(":")[1] == "-" else pas
+        pas = pas[::-1] if pas[0].split(":")[2] == "-" else pas
 
         # get the length of the exon
         name, exon_nr, tot_nr, start, end = exon.split(":")
@@ -57,7 +57,7 @@ def main(options):
 
         # check if distal poly(A) site is upstream of the end;
         # else: adjust end such that the representative site refers to the end
-        chrom, strand, distal_pos, location_code = pas[-1].split(":")
+        chrom, distal_pos, strand = pas[-1].split(":")
         distal_pos = int(distal_pos)
         if strand == "+":
             if end < distal_pos:
@@ -70,7 +70,7 @@ def main(options):
         distance = end - start + 1
         for p in pas:
             tmp = p.split(":")
-            pos = int(tmp[2])
+            pos = int(tmp[1])
             if strand == "+":
                 # get relative position with respect to start coordinate
                 sysout("%s\t%.2f\n" % (p, (float(pos - start + 1) / distance * 100.0)))
