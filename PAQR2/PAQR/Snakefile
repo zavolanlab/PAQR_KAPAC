@@ -434,8 +434,8 @@ rule PAQ_normalize_expression:
 
 rule PAQ_filter_on_expression:
     """
-    Filter summary table: remove all exons for which any site was
-    not expressed in all samples; keep tandem pas per terminal exon
+    Filter summary table: remove all exons for which any site had
+    zero expression in all samples; keep tandem pas per terminal exon
     """
     input:
         TSV_normalized_expression = os.path.join(
