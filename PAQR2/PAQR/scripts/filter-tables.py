@@ -71,9 +71,18 @@ def parse_arguments():
 def main():
     """Main body of the script."""
 
-    positions = pd.read_csv(options.pas_positions, sep="\t", index_col=0, header=None)
-    expression = pd.read_csv(options.normalized_expression, sep="\t")
-    samples = expression.columns.values[10:]
+    try:
+        positions = pd.read_csv(options.pas_positions, sep="\t", index_col=0, header=None)
+        expression = pd.read_csv(options.normalized_expression, sep="\t")
+        samples = expression.columns.values[10:]
+    except pd.errors.EmptyDataError as e:
+        logger.exception("Empty input file(s). Nothing to be done.")
+        with open(options.filtered_expression, "w") as out_ex, open(options.filtered_positions, "w") as out_pos:
+            sorry_empty = ("Received empty input files, can't filter. \n"
+                        "Apparently PAQR did NOT identify any alternatively used tandem PAS.")
+            out_ex.write(sorry_empty)
+            out_pos.write(sorry_empty)
+        exit(0)
 
     # all sites in this table are significant in at least one sample
     # (according to the previous processing)
