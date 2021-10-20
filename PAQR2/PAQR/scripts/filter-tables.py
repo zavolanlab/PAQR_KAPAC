@@ -51,6 +51,12 @@ def parse_arguments():
         help="Path to the file with pas positions within terminal exons.",
     )
     parser.add_argument(
+        "--pas-usage",
+        dest="pas_usage",
+        required=True,
+        help="Path to the file with pas usage within terminal exons.",
+    )
+    parser.add_argument(
         "--filtered-expression",
         dest="filtered_expression",
         required=True,
@@ -61,6 +67,12 @@ def parse_arguments():
         dest="filtered_positions",
         required=True,
         help="Path for the output file with pas positions.",
+    )
+    parser.add_argument(
+        "--filtered-usage",
+        dest="filtered_usage",
+        required=True,
+        help="Path for the output file with pas usage.",
     )
     return parser
 
@@ -73,15 +85,18 @@ def main():
 
     try:
         positions = pd.read_csv(options.pas_positions, sep="\t", index_col=0, header=None)
+        usage = pd.read_csv(options.pas_usage, sep="\t", header=None)
         expression = pd.read_csv(options.normalized_expression, sep="\t")
-        samples = expression.columns.values[10:]
+        # For usage file we still need headers, take those from expression file
+        usage.columns = expression.columns
     except pd.errors.EmptyDataError as e:
         logger.exception("Empty input file(s). Nothing to be done.")
-        with open(options.filtered_expression, "w") as out_ex, open(options.filtered_positions, "w") as out_pos:
+        with open(options.filtered_expression, "w") as out_ex, open(options.filtered_positions, "w") as out_pos, open(options.filtered_usage, "w") as out_usg:
             sorry_empty = ("Received empty input files, can't filter. \n"
                         "Apparently PAQR did NOT identify any alternatively used tandem PAS.")
             out_ex.write(sorry_empty)
             out_pos.write(sorry_empty)
+            out_usg.write(sorry_empty)
         exit(0)
 
     # all sites in this table are significant in at least one sample
@@ -104,6 +119,10 @@ def main():
     positions = positions.loc[pas_whitelist]
     positions.sort_index(inplace=True)
     positions.to_csv(options.filtered_positions, sep="\t", header=False)
+    # same for usage table
+    usage = usage.loc[usage["pas"].isin(pas_whitelist)]
+    usage.sort_values(by="pas", inplace=True)
+    usage.to_csv(options.filtered_usage, sep="\t", index=False)
 
 
 ##############################################################################

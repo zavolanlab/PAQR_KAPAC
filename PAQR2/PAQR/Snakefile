@@ -53,6 +53,13 @@ rule PAQ_all:
                 "filtered_pas_positions.tsv"
             ),
             PAQ_output_dir = config["PAQ_outdir"]
+        ),
+        PDF_exon_lengths = expand(
+            os.path.join(
+                "{PAQ_output_dir}",
+                "weighted_avg_exon_lengths.pdf"
+            ),
+            PAQ_output_dir = config["PAQ_outdir"]
         )
 
 ##############################################################################
@@ -446,6 +453,10 @@ rule PAQ_filter_on_expression:
             "{PAQ_output_dir}",
             "relative_pas_positions.tsv"
         ),
+        TSV_relative_pas_usage = os.path.join(
+            "{PAQ_output_dir}",
+            "tandem_pas_relative_usage.tsv"
+        ),
         SCRIPT_ = os.path.join(
             config["PAQ_scripts_dir"],
             "filter-tables.py"
@@ -459,6 +470,10 @@ rule PAQ_filter_on_expression:
         TSV_filtered_pas_positions = os.path.join(
             "{PAQ_output_dir}",
             "filtered_pas_positions.tsv"
+        ),
+        TSV_filtered_usage = os.path.join(
+            "{PAQ_output_dir}",
+            "filtered_pas_usage.tsv"
         )
 
     params:
@@ -498,7 +513,130 @@ rule PAQ_filter_on_expression:
         python {input.SCRIPT_} \
         --normalized-expression {input.TSV_normalized_expression} \
         --pas-positions {input.TSV_relative_pas_positions} \
+        --pas-usage {input.TSV_relative_pas_usage} \
         --filtered-expression {output.TSV_filtered_expression} \
         --filtered-positions {output.TSV_filtered_pas_positions} \
+        --filtered-usage {output.TSV_filtered_usage} \
         1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
         """
+
+#-------------------------------------------------------------------------------
+# get weighted average exon length
+#-------------------------------------------------------------------------------
+rule weighted_average_exon_length:
+    input:
+        TSV_filtered_usage = os.path.join(
+            "{PAQ_output_dir}",
+            "filtered_pas_usage.tsv"
+        ),
+        TSV_filtered_pas_positions = os.path.join(
+            "{PAQ_output_dir}",
+            "filtered_pas_positions.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "calculate-average-3pUTR-length.py"
+        )
+    output:
+        TSV_exon_lengths = os.path.join(
+            "{PAQ_output_dir}",
+            "weighted_avg_exon_lengths.tsv"
+        )
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_exon_lenghts.log"
+        )
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_exon_lengths.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_exon_lengths.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_exon_lengths.benchmark.log"
+        )
+
+    conda:
+        "env/python.yml"
+
+    singularity:
+        "docker://zavolab/mapp_base_python:1.1.1"
+
+    shell:
+        """
+        python {input.SCRIPT_} \
+        --relativePos={input.TSV_filtered_pas_positions} \
+        --relUsage {input.TSV_filtered_usage} \
+        1> {output.TSV_exon_lengths} \
+        2> {log.LOG_local_stderr}
+        """
+
+#-------------------------------------------------------------------------------
+# plot the cumulative distribution for the weighted average exon lengths
+# per sample
+#-------------------------------------------------------------------------------
+rule plot_average_exon_length:
+    ##LOCAL##
+    input:
+        TSV_exon_lengths = os.path.join(
+            "{PAQ_output_dir}",
+            "weighted_avg_exon_lengths.tsv"
+        ),
+        SCRIPT_ = os.path.join(
+            config["PAQ_scripts_dir"],
+            "plot-ecdfs.R"
+        )
+    output:
+        PDF_exon_lengths = os.path.join(
+            "{PAQ_output_dir}",
+            "weighted_avg_exon_lengths.pdf"
+        )
+    params:
+        LOG_cluster_log = os.path.join(
+            "{PAQ_output_dir}",
+            "cluster_log",
+            "PAQ_plot_exon_lenghts.log"
+        )
+
+    log:
+        LOG_local_stdout = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_plot_exon_lengths.stdout.log"
+        ),
+        LOG_local_stderr = os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_plot_exon_lengths.stderr.log"
+        )
+
+    benchmark:
+        os.path.join(
+            "{PAQ_output_dir}",
+            "local_log",
+            "PAQ_plot_exon_lengths.benchmark.log"
+        )
+
+    conda:
+        "env/r.yml"
+
+    singularity:
+        "docker://zavolab/rzavolab:4.0.0"
+    shell:
+        '''
+        Rscript {input.SCRIPT_} \
+        --pdf={output.PDF_exon_lengths} \
+        --file={input.TSV_exon_lengths}
+        '''
