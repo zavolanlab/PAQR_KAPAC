@@ -2055,6 +2055,20 @@ def main(options):
                 "gene",
                 "\t".join(options.sample_names) ) )
 
+            # Also getting headers for the rel usage file
+            sysout("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (
+                "chrom",
+                "start",
+                "end",
+                "pas",
+                "score",
+                "strand",
+                "polyAsite_exon_idx",
+                "nr_polyAsites_on_exon",
+                "exon",
+                "gene",
+                "\t".join(options.sample_names) ) )
+
             for res_tu in result_tuples:
                 exon = res_tu[0]
                 used_sites = res_tu[1]

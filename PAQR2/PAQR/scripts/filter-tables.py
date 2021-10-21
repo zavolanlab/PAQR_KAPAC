@@ -85,18 +85,17 @@ def main():
 
     try:
         positions = pd.read_csv(options.pas_positions, sep="\t", index_col=0, header=None)
-        usage = pd.read_csv(options.pas_usage, sep="\t", header=None)
+        usage = pd.read_csv(options.pas_usage, sep="\t")
         expression = pd.read_csv(options.normalized_expression, sep="\t")
-        # For usage file we still need headers, take those from expression file
-        usage.columns = expression.columns
+        
     except pd.errors.EmptyDataError as e:
-        logger.exception("Empty input file(s). Nothing to be done.")
-        with open(options.filtered_expression, "w") as out_ex, open(options.filtered_positions, "w") as out_pos, open(options.filtered_usage, "w") as out_usg:
-            sorry_empty = ("Received empty input files, can't filter. \n"
-                        "Apparently PAQR did NOT identify any alternatively used tandem PAS.")
-            out_ex.write(sorry_empty)
-            out_pos.write(sorry_empty)
-            out_usg.write(sorry_empty)
+        logger.exception("Empty input file(s). Nothing to be done.\n Apparently PAQR did NOT identify any alternatively used tandem PAS.")
+
+        # Still get the headers and write them to empty files
+        for pair in [(options.pas_positions, options.filtered_positions), (options.pas_usage,options.filtered_usage), (options.normalized_expression, options.filtered_expression)]:
+            with open(pair[0], "rt") as infile:
+                with open(pair [1], "w") as outfile:
+                    outfile.write(infile.readline())
         exit(0)
 
     # all sites in this table are significant in at least one sample

@@ -638,5 +638,6 @@ rule plot_average_exon_length:
         '''
         Rscript {input.SCRIPT_} \
         --pdf={output.PDF_exon_lengths} \
-        --file={input.TSV_exon_lengths}
+        --file={input.TSV_exon_lengths} \
+        1> {log.LOG_local_stdout} 2> {log.LOG_local_stderr}
         '''
