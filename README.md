@@ -1,3 +1,11 @@
+
+># NOTE:
+>## This repository is no longer maintained.
+>## For using PAQR, please visit the new repository at [https://github.com/zavolanlab/PAQR2](https://github.com/zavolanlab/PAQR2)
+
+---
+
+
 # Use PAQR and KAPAC
 
 This repository provides all necessary information and scripts required to use the methods PAQR and/or KAPAC.
